@@ -18,12 +18,7 @@ function isActive(tag: string) {
   <div class="tag-filter">
     <div class="tag-filter__header">
       <span class="tag-filter__label">按标签筛选</span>
-      <button
-        v-if="selected.length"
-        type="button"
-        class="tag-filter__clear"
-        @click="emit('clear')"
-      >
+      <button v-if="selected.length" type="button" class="tag-filter__clear" @click="emit('clear')">
         清除
       </button>
     </div>

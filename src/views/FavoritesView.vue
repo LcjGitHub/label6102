@@ -39,12 +39,17 @@ function closeExportMenu() {
 <template>
   <div class="favorites" @click="showExportMenu && closeExportMenu()">
     <header class="favorites__header">
-      <button type="button" class="btn" @click="router.push('/')">
-        ← 返回地图
-      </button>
+      <button type="button" class="btn" @click="router.push('/')">← 返回地图</button>
       <h2 class="favorites__title">
-        <svg class="favorites__title-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+        <svg
+          class="favorites__title-icon"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          />
         </svg>
         我的收藏
         <span class="favorites__count">（{{ favoriteSamples.length }}）</span>
@@ -56,7 +61,16 @@ function closeExportMenu() {
           :disabled="isExporting || favoriteSamples.length === 0"
           @click="toggleExportMenu"
         >
-          <svg class="favorites__export-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            class="favorites__export-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
             <polyline points="7 10 12 15 17 10" />
             <line x1="12" y1="15" x2="12" y2="3" />
@@ -70,7 +84,16 @@ function closeExportMenu() {
             :class="{ 'is-active': exportFormat === 'json' }"
             @click="handleExport('json')"
           >
-            <svg class="favorites__export-format-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="favorites__export-format-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
               <polyline points="14 2 14 8 20 8" />
               <line x1="16" y1="13" x2="8" y2="13" />
@@ -88,7 +111,16 @@ function closeExportMenu() {
             :class="{ 'is-active': exportFormat === 'csv' }"
             @click="handleExport('csv')"
           >
-            <svg class="favorites__export-format-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="favorites__export-format-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
               <line x1="3" y1="9" x2="21" y2="9" />
               <line x1="3" y1="15" x2="21" y2="15" />
@@ -106,7 +138,9 @@ function closeExportMenu() {
 
     <div v-if="isExporting && exportProgress" class="favorites__progress card">
       <div class="favorites__progress-header">
-        <span class="favorites__progress-title">正在导出「{{ FORMAT_LABELS[exportProgress.format] }}」文件...</span>
+        <span class="favorites__progress-title">
+          正在导出「{{ FORMAT_LABELS[exportProgress.format] }}」文件...
+        </span>
         <span class="favorites__progress-percent">
           {{ Math.round((exportProgress.current / exportProgress.total) * 100) }}%
         </span>
@@ -124,7 +158,16 @@ function closeExportMenu() {
 
     <Transition name="slide-fade">
       <div v-if="exportSuccess" class="favorites__success card">
-        <svg class="favorites__success-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          class="favorites__success-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
           <polyline points="22 4 12 14.01 9 11.01" />
         </svg>

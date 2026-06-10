@@ -62,7 +62,9 @@ export function useExport() {
         sample.recordedAt,
         JSON.stringify(sample.timeDistribution),
         sample.waveformSeed.toString(),
-      ].map((val) => escape(val)).join(',')
+      ]
+        .map((val) => escape(val))
+        .join(',')
     })
 
     return [headers.join(','), ...rows].join('\n')

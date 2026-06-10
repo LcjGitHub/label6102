@@ -89,9 +89,7 @@ async function handleDelete() {
 
 <template>
   <div v-if="sample" class="detail">
-    <button type="button" class="detail__back btn" @click="router.push('/')">
-      ← 返回地图
-    </button>
+    <button type="button" class="detail__back btn" @click="router.push('/')">← 返回地图</button>
 
     <header class="detail__header card">
       <div class="detail__header-main">
@@ -118,12 +116,7 @@ async function handleDelete() {
                 删除
               </button>
               <FavoriteButton :sample-id="sample.id" />
-              <button
-                type="button"
-                class="share-btn"
-                title="分享"
-                @click="openShareModal"
-              >
+              <button type="button" class="share-btn" title="分享" @click="openShareModal">
                 <svg
                   class="share-btn__icon"
                   viewBox="0 0 24 24"
@@ -161,10 +154,7 @@ async function handleDelete() {
 
     <section class="detail__grid">
       <div class="detail__wave card">
-        <WaveformPlaceholder
-          :seed="sample.waveformSeed"
-          :duration-sec="sample.durationSec"
-        />
+        <WaveformPlaceholder :seed="sample.waveformSeed" :duration-sec="sample.durationSec" />
         <div class="detail__playback-mock">
           <button type="button" class="btn" disabled title="Mock 演示，无真实音频">
             ▶ 播放（Mock）
@@ -190,9 +180,7 @@ async function handleDelete() {
 
   <div v-else class="detail detail--empty">
     <p>未找到该采样点</p>
-    <button type="button" class="btn btn--primary" @click="router.push('/')">
-      返回首页
-    </button>
+    <button type="button" class="btn btn--primary" @click="router.push('/')">返回首页</button>
   </div>
 
   <ShareModal
@@ -205,15 +193,29 @@ async function handleDelete() {
   <div v-if="deleteConfirmVisible" class="modal-overlay" @click.self="closeDeleteConfirm">
     <div class="modal-card card">
       <Transition name="toast">
-        <div
-          v-if="toast.visible"
-          class="detail__toast"
-          :class="`detail__toast--${toast.type}`"
-        >
-          <svg v-if="toast.type === 'success'" class="detail__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <div v-if="toast.visible" class="detail__toast" :class="`detail__toast--${toast.type}`">
+          <svg
+            v-if="toast.type === 'success'"
+            class="detail__toast-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <polyline points="20 6 9 17 4 12" />
           </svg>
-          <svg v-else class="detail__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg
+            v-else
+            class="detail__toast-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
             <circle cx="12" cy="12" r="10" />
             <line x1="15" y1="9" x2="9" y2="15" />
             <line x1="9" y1="9" x2="15" y2="15" />
@@ -224,15 +226,10 @@ async function handleDelete() {
       <h3 class="modal-title">确认删除</h3>
       <p class="modal-message">确定要删除这个采样点吗？此操作不可撤销。</p>
       <div class="modal-actions">
-        <button type="button" class="btn" @click="closeDeleteConfirm" :disabled="deleting">
+        <button type="button" class="btn" :disabled="deleting" @click="closeDeleteConfirm">
           取消
         </button>
-        <button
-          type="button"
-          class="btn btn--danger"
-          @click="handleDelete"
-          :disabled="deleting"
-        >
+        <button type="button" class="btn btn--danger" :disabled="deleting" @click="handleDelete">
           {{ deleting ? '删除中...' : '确认删除' }}
         </button>
       </div>
@@ -361,7 +358,8 @@ async function handleDelete() {
 }
 
 @keyframes detailBadgePulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
   }
   50% {
@@ -579,7 +577,9 @@ async function handleDelete() {
 
 .toast-enter-active,
 .toast-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
 .toast-enter-from,

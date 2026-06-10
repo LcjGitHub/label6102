@@ -29,9 +29,7 @@ function createIcon(point: SamplePoint) {
   const size = isNew ? 42 : 34
   const tailHeight = 12
 
-  const badgeHtml = isNew
-    ? `<div class="sample-marker__badge">新</div>`
-    : ''
+  const badgeHtml = isNew ? `<div class="sample-marker__badge">新</div>` : ''
 
   const svgHtml = `
     <svg class="sample-marker__icon" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg">
@@ -208,7 +206,8 @@ onUnmounted(() => {
 }
 
 @keyframes mapBadgePulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5);
   }
   50% {

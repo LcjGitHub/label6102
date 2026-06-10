@@ -38,7 +38,9 @@ const bars = computed(() => {
     </div>
     <div class="waveform__timeline">
       <span>0:00</span>
-      <span>{{ Math.floor(durationSec / 60) }}:{{ String(durationSec % 60).padStart(2, '0') }}</span>
+      <span>
+        {{ Math.floor(durationSec / 60) }}:{{ String(durationSec % 60).padStart(2, '0') }}
+      </span>
     </div>
   </div>
 </template>

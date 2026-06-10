@@ -48,9 +48,7 @@ function handleRemove(e: Event, id: string) {
         <span v-for="tag in point.tags" :key="tag" class="tag">{{ tag }}</span>
       </div>
       <div class="fav-list__card-foot">
-        <span class="fav-list__meta">
-          🎙 {{ point.durationSec }} 秒 · {{ point.recordedAt }}
-        </span>
+        <span class="fav-list__meta">🎙 {{ point.durationSec }} 秒 · {{ point.recordedAt }}</span>
         <button
           type="button"
           class="fav-list__remove-btn"
@@ -58,7 +56,9 @@ function handleRemove(e: Event, id: string) {
           @click="(e) => handleRemove(e, point.id)"
         >
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            <path
+              d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            />
           </svg>
           取消收藏
         </button>
@@ -67,14 +67,23 @@ function handleRemove(e: Event, id: string) {
   </div>
 
   <div v-else class="fav-list__empty card">
-    <svg class="fav-list__empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    <svg
+      class="fav-list__empty-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path
+        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+      />
     </svg>
     <h3>还没有收藏任何采样点</h3>
     <p>在详情页点击收藏按钮即可加入收藏</p>
-    <button type="button" class="btn btn--primary" @click="router.push('/')">
-      去探索采样点
-    </button>
+    <button type="button" class="btn btn--primary" @click="router.push('/')">去探索采样点</button>
   </div>
 </template>
 
@@ -88,7 +97,9 @@ function handleRemove(e: Event, id: string) {
 .fav-list__card {
   padding: 18px 20px;
   cursor: pointer;
-  transition: transform 0.15s, border-color 0.15s;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -135,7 +146,8 @@ function handleRemove(e: Event, id: string) {
 }
 
 @keyframes favNewBadgePulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
   }
   50% {

@@ -87,8 +87,17 @@ watch(isSearchOpen, (open) => {
       <div v-if="isSearchOpen" class="search-overlay" @click="onOverlayClick">
         <div class="search-results" role="dialog" aria-modal="true" aria-label="搜索结果">
           <header class="search-results__header">
-            <form class="search-results__search-bar" @submit="onSubmitSearch" role="search">
-              <svg class="search-results__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <form class="search-results__search-bar" role="search" @submit="onSubmitSearch">
+              <svg
+                class="search-results__search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
@@ -104,17 +113,33 @@ watch(isSearchOpen, (open) => {
                 v-if="searchQuery"
                 type="button"
                 class="search-results__search-clear"
-                @click="onClear"
                 aria-label="清除搜索"
+                @click="onClear"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
             </form>
-            <button type="button" class="search-results__close" @click="onClose" aria-label="关闭">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <button type="button" class="search-results__close" aria-label="关闭" @click="onClose">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <line x1="18" y1="6" x2="6" y2="18" />
                 <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
@@ -127,14 +152,30 @@ watch(isSearchOpen, (open) => {
           <div v-if="!query && searchHistory.length" class="search-history">
             <div class="search-history__header">
               <div class="search-history__title">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <polyline points="1 4 1 10 7 10" />
                   <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
                 </svg>
                 <span>搜索历史</span>
               </div>
               <button type="button" class="search-history__clear-all" @click="onClearAllHistory">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
                   <path d="M10 11v6" />
@@ -150,7 +191,16 @@ watch(isSearchOpen, (open) => {
                 class="search-history__item"
                 @click="onHistoryClick(item)"
               >
-                <svg class="search-history__item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <svg
+                  class="search-history__item-icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -158,10 +208,18 @@ watch(isSearchOpen, (open) => {
                 <button
                   type="button"
                   class="search-history__item-remove"
-                  @click="onHistoryRemove(item, $event)"
                   aria-label="删除此条历史"
+                  @click="onHistoryRemove(item, $event)"
                 >
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
                     <line x1="18" y1="6" x2="6" y2="18" />
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
@@ -171,7 +229,16 @@ watch(isSearchOpen, (open) => {
           </div>
 
           <div v-else-if="!query" class="search-results__hint">
-            <svg class="search-results__hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="search-results__hint-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -190,33 +257,62 @@ watch(isSearchOpen, (open) => {
                 <div class="search-result__head">
                   <div class="search-result__name-wrap">
                     <h3 class="search-result__name">
-                      <template v-for="(seg, idx) in highlightText(result.point.name, query)" :key="idx">
+                      <template
+                        v-for="(seg, idx) in highlightText(result.point.name, query)"
+                        :key="idx"
+                      >
                         <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
                         <span v-else>{{ seg.text }}</span>
                       </template>
                     </h3>
-                    <span v-if="isUserSample(result.point.id)" class="search-result__new-badge">新</span>
+                    <span v-if="isUserSample(result.point.id)" class="search-result__new-badge">
+                      新
+                    </span>
                   </div>
-                  <span class="search-result__category">{{ CATEGORY_LABELS[result.point.category] }}</span>
+                  <span class="search-result__category">
+                    {{ CATEGORY_LABELS[result.point.category] }}
+                  </span>
                 </div>
                 <p class="search-result__address">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
                     <circle cx="12" cy="10" r="3" />
                   </svg>
-                  <template v-for="(seg, idx) in highlightText(result.point.address, query)" :key="idx">
+                  <template
+                    v-for="(seg, idx) in highlightText(result.point.address, query)"
+                    :key="idx"
+                  >
                     <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
                     <span v-else>{{ seg.text }}</span>
                   </template>
                 </p>
-                <p v-if="result.matches.some(m => m.field === 'description')" class="search-result__desc">
-                  <template v-for="(seg, idx) in highlightText(result.point.description, query)" :key="idx">
+                <p
+                  v-if="result.matches.some((m) => m.field === 'description')"
+                  class="search-result__desc"
+                >
+                  <template
+                    v-for="(seg, idx) in highlightText(result.point.description, query)"
+                    :key="idx"
+                  >
                     <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
                     <span v-else>{{ seg.text }}</span>
                   </template>
                 </p>
                 <div class="search-result__tags">
-                  <span v-for="tag in result.point.tags" :key="tag" class="tag" :class="{ 'tag--matched': tag.toLowerCase().includes(query.toLowerCase()) }">
+                  <span
+                    v-for="tag in result.point.tags"
+                    :key="tag"
+                    class="tag"
+                    :class="{ 'tag--matched': tag.toLowerCase().includes(query.toLowerCase()) }"
+                  >
                     <template v-for="(seg, idx) in highlightText(tag, query)" :key="idx">
                       <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
                       <span v-else>{{ seg.text }}</span>
@@ -224,14 +320,32 @@ watch(isSearchOpen, (open) => {
                   </span>
                 </div>
               </div>
-              <svg class="search-result__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <svg
+                class="search-result__arrow"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
                 <polyline points="9 18 15 12 9 6" />
               </svg>
             </li>
           </ul>
 
           <div v-else class="search-results__empty">
-            <svg class="search-results__empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg
+              class="search-results__empty-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
               <line x1="8" y1="11" x2="14" y2="11" />
@@ -305,7 +419,9 @@ watch(isSearchOpen, (open) => {
   border-radius: 999px;
   padding: 0 10px;
   height: 38px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .search-results__search-bar:focus-within {
@@ -348,7 +464,9 @@ watch(isSearchOpen, (open) => {
   color: var(--color-text-muted);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
 }
 
@@ -382,7 +500,9 @@ watch(isSearchOpen, (open) => {
   color: var(--color-text-muted);
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
 }
 
@@ -462,7 +582,8 @@ watch(isSearchOpen, (open) => {
 }
 
 @keyframes searchNewBadgePulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
   }
   50% {
@@ -513,7 +634,9 @@ watch(isSearchOpen, (open) => {
   height: 18px;
   color: var(--color-text-muted);
   flex-shrink: 0;
-  transition: transform 0.15s, color 0.15s;
+  transition:
+    transform 0.15s,
+    color 0.15s;
 }
 
 .search-result:hover .search-result__arrow {
@@ -558,7 +681,9 @@ watch(isSearchOpen, (open) => {
   font-size: 0.78rem;
   border-radius: 6px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
 
 .search-history__clear-all:hover {
@@ -623,7 +748,9 @@ watch(isSearchOpen, (open) => {
   color: var(--color-text-muted);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
   opacity: 0;
 }

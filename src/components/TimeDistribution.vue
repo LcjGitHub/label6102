@@ -17,10 +17,7 @@ const maxCount = computed(() => Math.max(...props.slots.map((s) => s.count), 1))
       <li v-for="slot in slots" :key="slot.period" class="time-dist__row">
         <span class="time-dist__period">{{ slot.period }}</span>
         <div class="time-dist__bar-wrap">
-          <div
-            class="time-dist__bar"
-            :style="{ width: `${(slot.count / maxCount) * 100}%` }"
-          />
+          <div class="time-dist__bar" :style="{ width: `${(slot.count / maxCount) * 100}%` }" />
         </div>
         <span class="time-dist__count">{{ slot.count }}</span>
       </li>

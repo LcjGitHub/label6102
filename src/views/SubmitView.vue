@@ -224,9 +224,7 @@ onUnmounted(() => {
 
 <template>
   <div class="submit">
-    <button type="button" class="submit__back btn" @click="router.push('/')">
-      ← 返回首页
-    </button>
+    <button type="button" class="submit__back btn" @click="router.push('/')">← 返回首页</button>
 
     <div v-if="submitSuccess" class="submit__success card">
       <div class="submit__success-icon">✓</div>
@@ -240,10 +238,11 @@ onUnmounted(() => {
         <p>分享你发现的城市声音采样点</p>
       </header>
 
-      <form class="submit__form" @submit.prevent="handleSubmit" novalidate>
+      <form class="submit__form" novalidate @submit.prevent="handleSubmit">
         <div class="submit__field">
           <label class="submit__label">
-            采样点名称 <span class="submit__required">*</span>
+            采样点名称
+            <span class="submit__required">*</span>
           </label>
           <input
             v-model="form.name"
@@ -257,15 +256,12 @@ onUnmounted(() => {
 
         <div class="submit__field">
           <label class="submit__label">
-            分类 <span class="submit__required">*</span>
+            分类
+            <span class="submit__required">*</span>
           </label>
           <select v-model="form.category" class="submit__input submit__select">
             <option value="">请选择分类</option>
-            <option
-              v-for="(label, key) in CATEGORY_LABELS"
-              :key="key"
-              :value="key"
-            >
+            <option v-for="(label, key) in CATEGORY_LABELS" :key="key" :value="key">
               {{ label }}
             </option>
           </select>
@@ -274,7 +270,8 @@ onUnmounted(() => {
 
         <div class="submit__field">
           <label class="submit__label">
-            经纬度 <span class="submit__required">*</span>
+            经纬度
+            <span class="submit__required">*</span>
             <span class="submit__hint">（点击地图或手动输入）</span>
           </label>
           <div class="submit__latlng">
@@ -302,20 +299,17 @@ onUnmounted(() => {
 
         <div class="submit__field">
           <label class="submit__label">
-            地址 <span class="submit__required">*</span>
+            地址
+            <span class="submit__required">*</span>
           </label>
-          <input
-            v-model="form.address"
-            type="text"
-            class="submit__input"
-            placeholder="详细地址"
-          />
+          <input v-model="form.address" type="text" class="submit__input" placeholder="详细地址" />
           <p v-if="errors.address" class="submit__error">{{ errors.address }}</p>
         </div>
 
         <div class="submit__field">
           <label class="submit__label">
-            描述 <span class="submit__required">*</span>
+            描述
+            <span class="submit__required">*</span>
           </label>
           <textarea
             v-model="form.description"
@@ -329,7 +323,8 @@ onUnmounted(() => {
 
         <div class="submit__field">
           <label class="submit__label">
-            标签 <span class="submit__required">*</span>
+            标签
+            <span class="submit__required">*</span>
             <span class="submit__hint">（可多选）</span>
           </label>
           <div class="submit__tags">
@@ -350,19 +345,17 @@ onUnmounted(() => {
         <div class="submit__row">
           <div class="submit__field submit__field--half">
             <label class="submit__label">
-              录制时间 <span class="submit__required">*</span>
+              录制时间
+              <span class="submit__required">*</span>
             </label>
-            <input
-              v-model="form.recordedAt"
-              type="datetime-local"
-              class="submit__input"
-            />
+            <input v-model="form.recordedAt" type="datetime-local" class="submit__input" />
             <p v-if="errors.recordedAt" class="submit__error">{{ errors.recordedAt }}</p>
           </div>
 
           <div class="submit__field submit__field--half">
             <label class="submit__label">
-              时长（秒） <span class="submit__required">*</span>
+              时长（秒）
+              <span class="submit__required">*</span>
               <span class="submit__hint">（5-600）</span>
             </label>
             <input
@@ -378,9 +371,7 @@ onUnmounted(() => {
         </div>
 
         <div class="submit__actions">
-          <button type="button" class="btn" @click="resetForm">
-            重置
-          </button>
+          <button type="button" class="btn" @click="resetForm">重置</button>
           <button type="submit" class="btn btn--primary" :disabled="submitting">
             {{ submitting ? '提交中...' : '提交采样点' }}
           </button>

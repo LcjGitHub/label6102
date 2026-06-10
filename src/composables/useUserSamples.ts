@@ -12,24 +12,19 @@ function loadUserSamples() {
       const parsed = JSON.parse(raw)
       if (Array.isArray(parsed)) {
         userSamples.value = parsed.filter(
-          (item) =>
-            item &&
-            typeof item.id === 'string' &&
-            typeof item.name === 'string',
+          (item) => item && typeof item.id === 'string' && typeof item.name === 'string',
         )
         return
       }
     }
-  } catch {
-  }
+  } catch {}
   userSamples.value = []
 }
 
 function saveUserSamples() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userSamples.value))
-  } catch {
-  }
+  } catch {}
 }
 
 loadUserSamples()

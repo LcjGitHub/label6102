@@ -4,10 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserSamples } from '@/composables/useUserSamples'
 import { ALL_TAGS, CATEGORY_LABELS } from '@/types/sample'
 import type { SamplePoint } from '@/types/sample'
-import {
-  validateEditForm,
-  hasErrors,
-} from '@/composables/useSampleForm'
+import { validateEditForm, hasErrors } from '@/composables/useSampleForm'
 import type { EditFormData, EditFormErrors } from '@/composables/useSampleForm'
 
 const router = useRouter()
@@ -50,10 +47,22 @@ function clearError(field: keyof EditFormErrors) {
   saveError.value = ''
 }
 
-watch(() => form.name, () => clearError('name'))
-watch(() => form.address, () => clearError('address'))
-watch(() => form.description, () => clearError('description'))
-watch(() => form.tags.length, () => clearError('tags'))
+watch(
+  () => form.name,
+  () => clearError('name'),
+)
+watch(
+  () => form.address,
+  () => clearError('address'),
+)
+watch(
+  () => form.description,
+  () => clearError('description'),
+)
+watch(
+  () => form.tags.length,
+  () => clearError('tags'),
+)
 
 function toggleTag(tag: string) {
   const idx = form.tags.indexOf(tag)
@@ -119,21 +128,15 @@ loadSampleData()
 
 <template>
   <div class="edit">
-    <button type="button" class="edit__back btn" @click="goBack">
-      ← 返回
-    </button>
+    <button type="button" class="edit__back btn" @click="goBack">← 返回</button>
 
     <div v-if="!canEdit" class="edit__empty card">
       <div class="edit__empty-icon">🔒</div>
       <h2>无权编辑该采样点</h2>
       <p>您只能编辑自己提交的采样点</p>
       <div class="edit__empty-actions">
-        <button type="button" class="btn" @click="router.back()">
-          返回上一页
-        </button>
-        <button type="button" class="btn btn--primary" @click="router.push('/')">
-          返回首页
-        </button>
+        <button type="button" class="btn" @click="router.back()">返回上一页</button>
+        <button type="button" class="btn btn--primary" @click="router.push('/')">返回首页</button>
       </div>
     </div>
 
@@ -142,12 +145,8 @@ loadSampleData()
       <h2>采样点不存在</h2>
       <p>未找到该采样点的相关信息</p>
       <div class="edit__empty-actions">
-        <button type="button" class="btn" @click="router.back()">
-          返回上一页
-        </button>
-        <button type="button" class="btn btn--primary" @click="router.push('/')">
-          返回首页
-        </button>
+        <button type="button" class="btn" @click="router.back()">返回上一页</button>
+        <button type="button" class="btn btn--primary" @click="router.push('/')">返回首页</button>
       </div>
     </div>
 
@@ -166,7 +165,9 @@ loadSampleData()
       <div v-if="originalSample" class="edit__sample-info">
         <div class="edit__sample-info-item">
           <span class="edit__sample-info-label">分类</span>
-          <span class="edit__sample-info-value">{{ CATEGORY_LABELS[originalSample.category] }}</span>
+          <span class="edit__sample-info-value">
+            {{ CATEGORY_LABELS[originalSample.category] }}
+          </span>
         </div>
         <div class="edit__sample-info-item">
           <span class="edit__sample-info-label">录制时间</span>
@@ -178,10 +179,11 @@ loadSampleData()
         </div>
       </div>
 
-      <form class="edit__form" @submit.prevent="handleSubmit" novalidate>
+      <form class="edit__form" novalidate @submit.prevent="handleSubmit">
         <div class="edit__field">
           <label class="edit__label">
-            采样点名称 <span class="edit__required">*</span>
+            采样点名称
+            <span class="edit__required">*</span>
           </label>
           <input
             v-model="form.name"
@@ -195,20 +197,17 @@ loadSampleData()
 
         <div class="edit__field">
           <label class="edit__label">
-            地址 <span class="edit__required">*</span>
+            地址
+            <span class="edit__required">*</span>
           </label>
-          <input
-            v-model="form.address"
-            type="text"
-            class="edit__input"
-            placeholder="详细地址"
-          />
+          <input v-model="form.address" type="text" class="edit__input" placeholder="详细地址" />
           <p v-if="errors.address" class="edit__error">{{ errors.address }}</p>
         </div>
 
         <div class="edit__field">
           <label class="edit__label">
-            描述 <span class="edit__required">*</span>
+            描述
+            <span class="edit__required">*</span>
           </label>
           <textarea
             v-model="form.description"
@@ -222,7 +221,8 @@ loadSampleData()
 
         <div class="edit__field">
           <label class="edit__label">
-            标签 <span class="edit__required">*</span>
+            标签
+            <span class="edit__required">*</span>
             <span class="edit__hint">（可多选）</span>
           </label>
           <div class="edit__tags">
@@ -245,9 +245,7 @@ loadSampleData()
         </div>
 
         <div class="edit__actions">
-          <button type="button" class="btn" @click="resetForm">
-            重置
-          </button>
+          <button type="button" class="btn" @click="resetForm">重置</button>
           <button type="submit" class="btn btn--primary" :disabled="submitting">
             {{ submitting ? '保存中...' : '保存修改' }}
           </button>

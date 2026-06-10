@@ -14,16 +14,14 @@ function loadFavorites() {
         return
       }
     }
-  } catch {
-  }
+  } catch {}
   favorites.value = []
 }
 
 function saveFavorites() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(favorites.value))
-  } catch {
-  }
+  } catch {}
 }
 
 loadFavorites()

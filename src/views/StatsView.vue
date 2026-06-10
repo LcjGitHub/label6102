@@ -13,23 +13,11 @@ const {
   refresh,
 } = useStats()
 
-const maxTimeCount = computed(() =>
-  Math.max(...timeDistribution.value.map((t) => t.count), 1),
-)
+const maxTimeCount = computed(() => Math.max(...timeDistribution.value.map((t) => t.count), 1))
 
-const maxTagCount = computed(() =>
-  Math.max(...tagStats.value.map((t) => t.count), 1),
-)
+const maxTagCount = computed(() => Math.max(...tagStats.value.map((t) => t.count), 1))
 
-const pieColors = [
-  '#3dd6c6',
-  '#5b8def',
-  '#f5a623',
-  '#ff6b6b',
-  '#a855f7',
-  '#22c55e',
-  '#ec4899',
-]
+const pieColors = ['#3dd6c6', '#5b8def', '#f5a623', '#ff6b6b', '#a855f7', '#22c55e', '#ec4899']
 
 const pieData = computed(() => {
   const total = totalCount.value || 1
@@ -83,7 +71,16 @@ function formatTime(date: Date): string {
     <header class="stats__header card">
       <div class="stats__header-left">
         <h1 class="stats__title">
-          <svg class="stats__title-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            class="stats__title-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <line x1="18" y1="20" x2="18" y2="10"></line>
             <line x1="12" y1="20" x2="12" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="14"></line>
@@ -123,7 +120,15 @@ function formatTime(date: Date): string {
     <section class="stats__cards">
       <div class="stats__card card">
         <div class="stats__card-icon stats__card-icon--total">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
             <circle cx="12" cy="10" r="3"></circle>
           </svg>
@@ -136,7 +141,15 @@ function formatTime(date: Date): string {
 
       <div class="stats__card card">
         <div class="stats__card-icon stats__card-icon--avg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <circle cx="12" cy="12" r="10"></circle>
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
@@ -149,7 +162,15 @@ function formatTime(date: Date): string {
 
       <div class="stats__card card">
         <div class="stats__card-icon stats__card-icon--max">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
             <polyline points="17 6 23 6 23 12"></polyline>
           </svg>
@@ -162,7 +183,15 @@ function formatTime(date: Date): string {
 
       <div class="stats__card card">
         <div class="stats__card-icon stats__card-icon--min">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
             <polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline>
             <polyline points="17 18 23 18 23 12"></polyline>
           </svg>
@@ -188,7 +217,9 @@ function formatTime(date: Date): string {
             />
             <circle cx="100" cy="100" r="44" :fill="'var(--color-surface)'" />
             <text x="100" y="92" text-anchor="middle" class="stats__pie-center-label">总计</text>
-            <text x="100" y="115" text-anchor="middle" class="stats__pie-center-value">{{ totalCount }}</text>
+            <text x="100" y="115" text-anchor="middle" class="stats__pie-center-value">
+              {{ totalCount }}
+            </text>
           </svg>
           <ul class="stats__pie-legend">
             <li v-for="(slice, i) in pieData" :key="i" class="stats__legend-item">
@@ -205,11 +236,7 @@ function formatTime(date: Date): string {
         <h2 class="stats__chart-title">时段分布统计</h2>
         <div class="stats__chart-body">
           <div class="stats__time-bars">
-            <div
-              v-for="slot in timeDistribution"
-              :key="slot.period"
-              class="stats__time-col"
-            >
+            <div v-for="slot in timeDistribution" :key="slot.period" class="stats__time-col">
               <div class="stats__time-bar-wrap">
                 <div
                   class="stats__time-bar"
@@ -241,7 +268,9 @@ function formatTime(date: Date): string {
           </div>
           <ol class="stats__tag-ranking">
             <li v-for="(tag, i) in tagStats.slice(0, 5)" :key="tag.tag" class="stats__ranking-item">
-              <span class="stats__ranking-index" :class="`stats__ranking-index--${i + 1}`">{{ i + 1 }}</span>
+              <span class="stats__ranking-index" :class="`stats__ranking-index--${i + 1}`">
+                {{ i + 1 }}
+              </span>
               <span class="stats__ranking-tag">{{ tag.tag }}</span>
               <span class="stats__ranking-bar-wrap">
                 <span
@@ -327,8 +356,12 @@ function formatTime(date: Date): string {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .stats__cards {

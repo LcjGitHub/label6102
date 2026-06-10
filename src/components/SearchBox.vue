@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import { useSearch } from '@/composables/useSearch'
 
-const { searchQuery, isSearchOpen, openSearch, setQuery, clearQuery, addToSearchHistory } = useSearch()
+const { searchQuery, isSearchOpen, openSearch, setQuery, clearQuery, addToSearchHistory } =
+  useSearch()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
@@ -27,9 +28,18 @@ function onSubmit(e: Event) {
 </script>
 
 <template>
-  <form class="search-box" @submit="onSubmit" role="search">
+  <form class="search-box" role="search" @submit="onSubmit">
     <div class="search-box__inner">
-      <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <svg
+        class="search-box__icon"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
         <circle cx="11" cy="11" r="8" />
         <line x1="21" y1="21" x2="16.65" y2="16.65" />
       </svg>
@@ -45,10 +55,18 @@ function onSubmit(e: Event) {
         v-if="searchQuery"
         type="button"
         class="search-box__clear"
-        @click="onClear"
         aria-label="清除搜索"
+        @click="onClear"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <line x1="18" y1="6" x2="6" y2="18" />
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
@@ -59,7 +77,15 @@ function onSubmit(e: Event) {
         :class="{ 'search-box__btn--open': isSearchOpen }"
         aria-label="搜索"
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
@@ -85,7 +111,9 @@ function onSubmit(e: Event) {
   border-radius: 999px;
   padding: 0 6px 0 12px;
   height: 40px;
-  transition: border-color 0.15s, background 0.15s;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
 }
 
 .search-box__inner:focus-within {
@@ -128,7 +156,9 @@ function onSubmit(e: Event) {
   color: var(--color-text-muted);
   border-radius: 50%;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s;
   flex-shrink: 0;
 }
 

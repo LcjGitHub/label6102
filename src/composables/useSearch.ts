@@ -12,85 +12,17 @@ export interface SearchResult {
   matches: SearchMatch[]
 }
 
-const SEARCH_HISTORY_KEY = 'search_history'
-const MAX_SEARCH_HISTORY = 10
-
 const searchQuery = ref('')
 const isSearchOpen = ref(false)
-const searchHistory = ref<string[]>([])
-
-function loadSearchHistory() {
-  try {
-    const stored = localStorage.getItem(SEARCH_HISTORY_KEY)
-    if (stored) {
-      const parsed = JSON.parse(stored)
-      if (
-        Array.isArray(parsed) &&
-        parsed.every((item: unknown) => typeof item === 'string')
-      ) {
-        searchHistory.value = parsed
-      } else {
-        searchHistory.value = []
-        saveSearchHistory()
-      }
-    }
-  } catch (e) {
-    console.error('Failed to load search history:', e)
-    searchHistory.value = []
-  }
-}
-
-function saveSearchHistory() {
-  try {
-    localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
-  } catch (e) {
-    console.error('Failed to save search history:', e)
-  }
-}
 
 export function useSearch() {
   const normalizedQuery = computed(() => searchQuery.value.trim().toLowerCase())
-
-  if (searchHistory.value.length === 0) {
-    loadSearchHistory()
-  }
-
-  function addToSearchHistory(query: string) {
-    const trimmed = query.trim()
-    if (!trimmed) return
-
-    const existingIndex = searchHistory.value.indexOf(trimmed)
-    if (existingIndex !== -1) {
-      searchHistory.value.splice(existingIndex, 1)
-    }
-
-    searchHistory.value.unshift(trimmed)
-
-    if (searchHistory.value.length > MAX_SEARCH_HISTORY) {
-      searchHistory.value = searchHistory.value.slice(0, MAX_SEARCH_HISTORY)
-    }
-
-    saveSearchHistory()
-  }
-
-  function removeFromSearchHistory(query: string) {
-    const index = searchHistory.value.indexOf(query)
-    if (index !== -1) {
-      searchHistory.value.splice(index, 1)
-      saveSearchHistory()
-    }
-  }
-
-  function clearSearchHistory() {
-    searchHistory.value = []
-    saveSearchHistory()
-  }
 
   const results = computed<SearchResult[]>(() => {
     const query = normalizedQuery.value
     if (!query) return []
 
-    return samplePoints.value
+    return samplePoints
       .map((point) => {
         const matches: SearchMatch[] = []
 
@@ -179,7 +111,6 @@ export function useSearch() {
     searchQuery,
     normalizedQuery,
     isSearchOpen,
-    searchHistory,
     results,
     openSearch,
     closeSearch,
@@ -187,8 +118,5 @@ export function useSearch() {
     setQuery,
     clearQuery,
     highlightText,
-    addToSearchHistory,
-    removeFromSearchHistory,
-    clearSearchHistory,
   }
 }

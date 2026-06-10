@@ -1,4 +1,4 @@
-import { computed } from 'vue'
+import { ref, watch } from 'vue'
 import type { SamplePoint } from '@/types/sample'
 import { useUserSamples } from '@/composables/useUserSamples'
 
@@ -322,7 +322,15 @@ const builtinSamples: SamplePoint[] = [
 
 const { userSamples, getUserSampleById } = useUserSamples()
 
-export const samplePoints = computed(() => [...userSamples.value, ...builtinSamples])
+export const samplePoints = ref<SamplePoint[]>([...userSamples.value, ...builtinSamples])
+
+watch(
+  userSamples,
+  (newVal) => {
+    samplePoints.value = [...newVal, ...builtinSamples]
+  },
+  { deep: true },
+)
 
 export function getSampleById(id: string): SamplePoint | undefined {
   const userSample = getUserSampleById(id)
@@ -330,8 +338,26 @@ export function getSampleById(id: string): SamplePoint | undefined {
   return builtinSamples.find((p) => p.id === id)
 }
 
+const tagMap = new Map<string, number>()
+let tagsCache: string[] | null = null
+
+function rebuildTagMap() {
+  tagMap.clear()
+  samplePoints.value.forEach((p) => {
+    p.tags.forEach((t) => {
+      tagMap.set(t, (tagMap.get(t) || 0) + 1)
+    })
+  })
+  tagsCache = null
+}
+
+rebuildTagMap()
+
+watch(samplePoints, rebuildTagMap, { deep: true })
+
 export function getAllTags(): string[] {
-  const tagSet = new Set<string>()
-  samplePoints.value.forEach((p) => p.tags.forEach((t) => tagSet.add(t)))
-  return Array.from(tagSet).sort()
+  if (tagsCache === null) {
+    tagsCache = Array.from(tagMap.keys()).sort()
+  }
+  return tagsCache
 }

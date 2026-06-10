@@ -1,11 +1,4 @@
-export type SampleCategory =
-  | 'park'
-  | 'metro'
-  | 'market'
-  | 'street'
-  | 'cafe'
-  | 'school'
-  | 'plaza'
+export type SampleCategory = 'park' | 'metro' | 'market' | 'street' | 'cafe' | 'school' | 'plaza'
 
 export interface TimeSlot {
   period: string
