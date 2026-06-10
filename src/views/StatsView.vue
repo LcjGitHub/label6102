@@ -13,10 +13,6 @@ const {
   refresh,
 } = useStats()
 
-const maxCategoryCount = computed(() =>
-  Math.max(...categoryStats.value.map((c) => c.count), 1),
-)
-
 const maxTimeCount = computed(() =>
   Math.max(...timeDistribution.value.map((t) => t.count), 1),
 )
@@ -206,30 +202,6 @@ function formatTime(date: Date): string {
       </div>
 
       <div class="stats__chart card">
-        <h2 class="stats__chart-title">分类柱状图</h2>
-        <div class="stats__chart-body">
-          <ul class="stats__bar-list">
-            <li v-for="(cat, i) in categoryStats" :key="cat.category" class="stats__bar-row">
-              <div class="stats__bar-label">
-                <span class="stats__bar-dot" :style="{ background: pieColors[i % pieColors.length] }"></span>
-                {{ cat.label }}
-              </div>
-              <div class="stats__bar-track">
-                <div
-                  class="stats__bar-fill"
-                  :style="{
-                    width: `${(cat.count / maxCategoryCount) * 100}%`,
-                    background: pieColors[i % pieColors.length],
-                  }"
-                ></div>
-              </div>
-              <div class="stats__bar-value">{{ cat.count }}</div>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="stats__chart card">
         <h2 class="stats__chart-title">时段分布统计</h2>
         <div class="stats__chart-body">
           <div class="stats__time-bars">
@@ -252,7 +224,7 @@ function formatTime(date: Date): string {
         </div>
       </div>
 
-      <div class="stats__chart card">
+      <div class="stats__chart card stats__chart--tags">
         <h2 class="stats__chart-title">热门标签</h2>
         <div class="stats__chart-body">
           <div class="stats__tag-cloud">
@@ -438,6 +410,10 @@ function formatTime(date: Date): string {
   min-height: 0;
 }
 
+.stats__chart--tags {
+  grid-column: 1 / -1;
+}
+
 .stats__chart-title {
   margin: 0 0 14px;
   font-size: 1.05rem;
@@ -523,64 +499,11 @@ function formatTime(date: Date): string {
   text-align: right;
 }
 
-.stats__bar-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.stats__bar-row {
-  display: grid;
-  grid-template-columns: 70px 1fr 36px;
-  align-items: center;
-  gap: 10px;
-}
-
-.stats__bar-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--color-text-muted);
-}
-
-.stats__bar-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-
-.stats__bar-track {
-  height: 22px;
-  background: var(--color-surface-2);
-  border-radius: 6px;
-  overflow: hidden;
-}
-
-.stats__bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.5s ease;
-  min-width: 4px;
-  opacity: 0.9;
-}
-
-.stats__bar-value {
-  text-align: right;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-accent);
-}
-
 .stats__time-bars {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
   height: 220px;
   padding-top: 20px;
 }
@@ -590,7 +513,7 @@ function formatTime(date: Date): string {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   height: 100%;
   min-width: 0;
 }
@@ -605,7 +528,7 @@ function formatTime(date: Date): string {
 
 .stats__time-bar {
   width: 70%;
-  max-width: 40px;
+  max-width: 44px;
   min-height: 4px;
   background: linear-gradient(180deg, var(--color-accent), var(--color-tag));
   border-radius: 6px 6px 0 0;
@@ -625,13 +548,11 @@ function formatTime(date: Date): string {
 }
 
 .stats__time-label {
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   color: var(--color-text-muted);
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+  letter-spacing: 0.02em;
 }
 
 .stats__tag-cloud {
@@ -762,6 +683,24 @@ function formatTime(date: Date): string {
   .stats__pie-wrap {
     justify-content: center;
   }
+
+  .stats__chart--tags {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .stats__time-bars {
+    gap: 6px;
+  }
+
+  .stats__time-col {
+    gap: 8px;
+  }
+
+  .stats__time-label {
+    font-size: 0.72rem;
+  }
 }
 
 @media (max-width: 600px) {
@@ -811,22 +750,41 @@ function formatTime(date: Date): string {
     height: 160px;
   }
 
-  .stats__bar-row {
-    grid-template-columns: 60px 1fr 32px;
-  }
-
   .stats__time-bars {
-    height: 180px;
+    height: 200px;
     gap: 4px;
   }
 
+  .stats__time-col {
+    gap: 6px;
+  }
+
   .stats__time-label {
-    font-size: 0.65rem;
+    font-size: 0.72rem;
+    letter-spacing: -0.01em;
   }
 
   .stats__ranking-item {
     grid-template-columns: 24px 60px 1fr 30px;
     gap: 8px;
+  }
+}
+
+@media (max-width: 440px) {
+  .stats__time-bars {
+    height: 180px;
+    gap: 3px;
+  }
+
+  .stats__time-label {
+    font-size: 0.65rem;
+    letter-spacing: -0.02em;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .stats__time-bar {
+    max-width: 32px;
   }
 }
 </style>

@@ -1,6 +1,6 @@
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { samplePoints } from '@/data/samples'
-import { CATEGORY_LABELS, type SampleCategory, type TimeSlot } from '@/types/sample'
+import { CATEGORY_LABELS, type SampleCategory } from '@/types/sample'
 
 export interface CategoryStats {
   category: SampleCategory
@@ -38,7 +38,17 @@ export interface StatsData {
   lastUpdated: Date
 }
 
-const refreshTrigger = ref(0)
+const TIME_PERIODS = [
+  { label: '06:00-09:00', start: 6, end: 9 },
+  { label: '09:00-12:00', start: 9, end: 12 },
+  { label: '12:00-15:00', start: 12, end: 15 },
+  { label: '15:00-18:00', start: 15, end: 18 },
+  { label: '18:00-21:00', start: 18, end: 21 },
+  { label: '21:00-24:00', start: 21, end: 24 },
+] as const
+
+const refreshNonce = ref(0)
+const lastUpdated = ref(new Date())
 
 function formatDuration(sec: number): string {
   const m = Math.floor(sec / 60)
@@ -49,16 +59,33 @@ function formatDuration(sec: number): string {
   return `${s}秒`
 }
 
+function getPeriodFromRecordedAt(recordedAt: string): string {
+  const match = recordedAt.match(/ (\d{1,2}):(\d{2})/)
+  if (!match) return TIME_PERIODS[0].label
+  const hour = parseInt(match[1], 10)
+  const period = TIME_PERIODS.find((p) => hour >= p.start && hour < p.end)
+  return period ? period.label : TIME_PERIODS[0].label
+}
+
+watch(
+  samplePoints,
+  () => {
+    lastUpdated.value = new Date()
+    refreshNonce.value++
+  },
+  { deep: true },
+)
+
 export function useStats() {
   const isRefreshing = ref(false)
 
   const totalCount = computed(() => {
-    refreshTrigger.value
+    refreshNonce.value
     return samplePoints.value.length
   })
 
   const categoryStats = computed<CategoryStats[]>(() => {
-    refreshTrigger.value
+    refreshNonce.value
     const counts: Record<SampleCategory, number> = {
       park: 0,
       metro: 0,
@@ -83,7 +110,7 @@ export function useStats() {
   })
 
   const tagStats = computed<TagStats[]>(() => {
-    refreshTrigger.value
+    refreshNonce.value
     const tagCounts: Record<string, number> = {}
     samplePoints.value.forEach((p) => {
       p.tags.forEach((t) => {
@@ -101,7 +128,7 @@ export function useStats() {
   })
 
   const durationStats = computed<DurationStats>(() => {
-    refreshTrigger.value
+    refreshNonce.value
     const durations = samplePoints.value.map((p) => p.durationSec)
     if (!durations.length) {
       return {
@@ -127,21 +154,19 @@ export function useStats() {
   })
 
   const timeDistribution = computed<TimeDistributionStats[]>(() => {
-    refreshTrigger.value
-    const merged: Record<string, number> = {}
-    samplePoints.value.forEach((p) => {
-      p.timeDistribution.forEach((slot: TimeSlot) => {
-        merged[slot.period] = (merged[slot.period] || 0) + slot.count
-      })
+    refreshNonce.value
+    const counts: Record<string, number> = {}
+    TIME_PERIODS.forEach((p) => {
+      counts[p.label] = 0
     })
-    return Object.entries(merged)
-      .map(([period, count]) => ({ period, count }))
-      .sort((a, b) => a.period.localeCompare(b.period))
-  })
-
-  const lastUpdated = computed(() => {
-    refreshTrigger.value
-    return new Date()
+    samplePoints.value.forEach((p) => {
+      const period = getPeriodFromRecordedAt(p.recordedAt)
+      counts[period] = (counts[period] || 0) + 1
+    })
+    return TIME_PERIODS.map((p) => ({
+      period: p.label,
+      count: counts[p.label],
+    }))
   })
 
   const stats = computed<StatsData>(() => ({
@@ -156,7 +181,8 @@ export function useStats() {
   async function refresh(): Promise<void> {
     isRefreshing.value = true
     await new Promise((resolve) => setTimeout(resolve, 400))
-    refreshTrigger.value++
+    refreshNonce.value++
+    lastUpdated.value = new Date()
     isRefreshing.value = false
   }
 
