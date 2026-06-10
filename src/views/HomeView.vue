@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, RouterLink } from 'vue-router'
 import SampleMap from '@/components/SampleMap.vue'
 import TagFilter from '@/components/TagFilter.vue'
+import { useFavorites } from '@/composables/useFavorites'
 import { samplePoints, getAllTags } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
 import type { SamplePoint } from '@/types/sample'
 
 const router = useRouter()
+const { favorites } = useFavorites()
 const allTags = getAllTags()
 const selectedTags = ref<string[]>([])
 
@@ -52,6 +54,16 @@ function categoryLabel(point: SamplePoint) {
 
       <div class="home__stats">
         <span>共 {{ filteredPoints.length }} / {{ samplePoints.length }} 个采样点</span>
+      </div>
+
+      <div class="home__fav-link">
+        <RouterLink to="/favorites" class="btn home__fav-btn">
+          <svg class="home__fav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+          </svg>
+          <span>我的收藏</span>
+          <span v-if="favorites.length" class="home__fav-count">{{ favorites.length }}</span>
+        </RouterLink>
       </div>
 
       <ul class="home__list">
@@ -104,6 +116,36 @@ function categoryLabel(point: SamplePoint) {
   font-size: 0.82rem;
   color: var(--color-text-muted);
   border-bottom: 1px solid var(--color-border);
+}
+
+.home__fav-link {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.home__fav-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.home__fav-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.home__fav-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #0a1218;
+  font-size: 0.72rem;
+  font-weight: 700;
 }
 
 .home__list {
