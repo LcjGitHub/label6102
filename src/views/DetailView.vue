@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import WaveformPlaceholder from '@/components/WaveformPlaceholder.vue'
 import TimeDistribution from '@/components/TimeDistribution.vue'
 import FavoriteButton from '@/components/FavoriteButton.vue'
+import ShareModal from '@/components/ShareModal.vue'
 import { getSampleById } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
 import { useUserSamples } from '@/composables/useUserSamples'
@@ -16,6 +17,16 @@ const router = useRouter()
 const { isUserSample } = useUserSamples()
 
 const sample = computed(() => getSampleById(props.id))
+
+const shareModalVisible = ref(false)
+
+function openShareModal() {
+  shareModalVisible.value = true
+}
+
+function closeShareModal() {
+  shareModalVisible.value = false
+}
 </script>
 
 <template>
@@ -31,7 +42,33 @@ const sample = computed(() => getSampleById(props.id))
           <div class="detail__title-row">
             <h1 class="detail__title">{{ sample.name }}</h1>
             <span v-if="isUserSample(sample.id)" class="detail__new-badge">新</span>
-            <FavoriteButton :sample-id="sample.id" />
+            <div class="detail__actions">
+              <FavoriteButton :sample-id="sample.id" />
+              <button
+                type="button"
+                class="share-btn"
+                title="分享"
+                @click="openShareModal"
+              >
+                <svg
+                  class="share-btn__icon"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+                <span class="share-btn__text">分享</span>
+              </button>
+            </div>
           </div>
           <p class="detail__address">{{ sample.address }}</p>
           <p class="detail__desc">{{ sample.description }}</p>
@@ -84,6 +121,13 @@ const sample = computed(() => getSampleById(props.id))
       返回首页
     </button>
   </div>
+
+  <ShareModal
+    v-if="sample"
+    :visible="shareModalVisible"
+    :sample="sample"
+    @close="closeShareModal"
+  />
 </template>
 
 <style scoped>
@@ -134,6 +178,40 @@ const sample = computed(() => getSampleById(props.id))
   align-items: center;
   gap: 12px;
   margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+
+.detail__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  transition: all 0.15s;
+}
+
+.share-btn:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.share-btn__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.share-btn__text {
+  font-size: 0.85rem;
 }
 
 .detail__title {
