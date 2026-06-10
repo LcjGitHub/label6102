@@ -73,10 +73,15 @@ function goStats() {
 <template>
   <div class="home">
     <div v-if="deleteSuccessVisible" class="toast toast--success">
-      <span class="toast__icon">✓</span>
+      <svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="20 6 9 17 4 12" />
+      </svg>
       <span class="toast__message">采样点已删除成功</span>
       <button type="button" class="toast__close" @click="closeDeleteSuccess" aria-label="关闭">
-        ×
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
       </button>
     </div>
 
@@ -369,8 +374,9 @@ function goStats() {
 }
 
 .toast__icon {
-  font-size: 1.1rem;
-  font-weight: 700;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
 .toast__message {
@@ -379,15 +385,23 @@ function goStats() {
 }
 
 .toast__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: none;
   border: none;
   color: inherit;
-  font-size: 1.2rem;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 2px;
   line-height: 1;
   opacity: 0.7;
   transition: opacity 0.15s;
+  border-radius: 4px;
+}
+
+.toast__close svg {
+  width: 16px;
+  height: 16px;
 }
 
 .toast__close:hover {

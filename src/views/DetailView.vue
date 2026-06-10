@@ -8,6 +8,14 @@ import ShareModal from '@/components/ShareModal.vue'
 import { getSampleById } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
 import { useUserSamples } from '@/composables/useUserSamples'
+import { useFavorites } from '@/composables/useFavorites'
+
+type ToastType = 'success' | 'error'
+interface ToastState {
+  visible: boolean
+  type: ToastType
+  message: string
+}
 
 const props = defineProps<{
   id: string
@@ -15,12 +23,19 @@ const props = defineProps<{
 
 const router = useRouter()
 const { isUserSample, deleteUserSample } = useUserSamples()
+const { removeFavorite } = useFavorites()
 
 const sample = computed(() => getSampleById(props.id))
 
 const shareModalVisible = ref(false)
 const deleteConfirmVisible = ref(false)
 const deleting = ref(false)
+const toast = ref<ToastState>({
+  visible: false,
+  type: 'success',
+  message: '',
+})
+let toastTimer: ReturnType<typeof setTimeout> | null = null
 
 function openShareModal() {
   shareModalVisible.value = true
@@ -38,16 +53,34 @@ function closeDeleteConfirm() {
   deleteConfirmVisible.value = false
 }
 
+function showToast(type: ToastType, message: string) {
+  if (toastTimer) {
+    clearTimeout(toastTimer)
+    toastTimer = null
+  }
+  toast.value = { visible: true, type, message }
+  toastTimer = setTimeout(() => {
+    toast.value.visible = false
+    toastTimer = null
+  }, 2500)
+}
+
 async function handleDelete() {
   if (!sample.value || !isUserSample(sample.value.id)) return
 
   deleting.value = true
 
   try {
-    const success = deleteUserSample(sample.value.id)
-    if (success) {
+    const sampleId = sample.value.id
+    const deleteSuccess = deleteUserSample(sampleId)
+    if (deleteSuccess) {
+      removeFavorite(sampleId)
       router.push({ path: '/', query: { deleted: '1' } })
+    } else {
+      showToast('error', '删除失败，请重试')
     }
+  } catch {
+    showToast('error', '删除失败，请重试')
   } finally {
     deleting.value = false
   }
@@ -171,6 +204,23 @@ async function handleDelete() {
 
   <div v-if="deleteConfirmVisible" class="modal-overlay" @click.self="closeDeleteConfirm">
     <div class="modal-card card">
+      <Transition name="toast">
+        <div
+          v-if="toast.visible"
+          class="detail__toast"
+          :class="`detail__toast--${toast.type}`"
+        >
+          <svg v-if="toast.type === 'success'" class="detail__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <svg v-else class="detail__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="15" y1="9" x2="9" y2="15" />
+            <line x1="9" y1="9" x2="15" y2="15" />
+          </svg>
+          <span>{{ toast.message }}</span>
+        </div>
+      </Transition>
       <h3 class="modal-title">确认删除</h3>
       <p class="modal-message">确定要删除这个采样点吗？此操作不可撤销。</p>
       <div class="modal-actions">
@@ -488,5 +538,53 @@ async function handleDelete() {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+.modal-card {
+  position: relative;
+}
+
+.detail__toast {
+  position: absolute;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.detail__toast--success {
+  background: rgba(7, 193, 96, 0.95);
+  color: #fff;
+}
+
+.detail__toast--error {
+  background: rgba(255, 77, 109, 0.95);
+  color: #fff;
+}
+
+.detail__toast-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
 }
 </style>
