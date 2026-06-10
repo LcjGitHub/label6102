@@ -2,7 +2,7 @@
 import { onMounted, onUnmounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import type { SamplePoint } from '@/types/sample'
-import { CATEGORY_LABELS } from '@/types/sample'
+import { CATEGORY_LABELS, CATEGORY_ICONS } from '@/types/sample'
 import { useUserSamples } from '@/composables/useUserSamples'
 
 const props = defineProps<{
@@ -22,28 +22,29 @@ let markerLayer: L.LayerGroup | null = null
 const SHANGHAI_CENTER: L.LatLngExpression = [31.2304, 121.4737]
 
 function createIcon(point: SamplePoint) {
-  const colors: Record<SamplePoint['category'], string> = {
-    park: '#4caf50',
-    metro: '#2196f3',
-    market: '#ff9800',
-    street: '#9c27b0',
-    cafe: '#795548',
-    school: '#e91e63',
-    plaza: '#00bcd4',
-  }
-
-  const color = colors[point.category]
+  const iconConfig = CATEGORY_ICONS[point.category]
+  const color = iconConfig.color
   const isNew = isUserSample(point.id)
+
+  const size = isNew ? 40 : 32
+  const anchor = size / 2
 
   const badgeHtml = isNew
     ? `<div class="sample-marker__badge">新</div>`
     : ''
 
+  const svgHtml = `
+    <svg class="sample-marker__icon" viewBox="0 0 24 24" fill="${color}" xmlns="http://www.w3.org/2000/svg">
+      ${iconConfig.svg}
+    </svg>
+  `
+
   return L.divIcon({
     className: 'sample-marker',
-    html: `<div class="sample-marker__dot" style="background:${color};box-shadow:0 0 0 3px ${color}44"></div>${badgeHtml}`,
-    iconSize: isNew ? [32, 32] : [16, 16],
-    iconAnchor: isNew ? [16, 16] : [8, 8],
+    html: `<div class="sample-marker__pin" style="--pin-color:${color}">${svgHtml}${badgeHtml}</div>`,
+    iconSize: [size, size + 10],
+    iconAnchor: [anchor, size + 10],
+    popupAnchor: [0, -(size + 10)],
   })
 }
 
@@ -141,21 +142,46 @@ onUnmounted(() => {
   border: none;
 }
 
-:global(.sample-marker__dot) {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 2px solid #fff;
+:global(.sample-marker__pin) {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+:global(.sample-marker__pin::after) {
+  content: '';
   position: absolute;
+  bottom: -10px;
   left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 10px solid #fff;
+}
+
+:global(.sample-marker__icon) {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+:global(.sample-marker__icon path) {
+  transform: rotate(45deg);
+  transform-origin: center;
 }
 
 :global(.sample-marker__badge) {
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: -4px;
+  right: -4px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
