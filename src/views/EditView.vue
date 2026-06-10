@@ -1,10 +1,14 @@
 <script setup lang="ts">
-import { reactive, ref, watch, onMounted, onUnmounted, computed } from 'vue'
+import { reactive, ref, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import L from 'leaflet'
 import { useUserSamples } from '@/composables/useUserSamples'
-import { CATEGORY_LABELS, ALL_TAGS } from '@/types/sample'
-import type { SampleCategory, SamplePoint, TimeSlot } from '@/types/sample'
+import { ALL_TAGS, CATEGORY_LABELS } from '@/types/sample'
+import type { SamplePoint } from '@/types/sample'
+import {
+  validateEditForm,
+  hasErrors,
+} from '@/composables/useSampleForm'
+import type { EditFormData, EditFormErrors } from '@/composables/useSampleForm'
 
 const router = useRouter()
 const route = useRoute()
@@ -14,201 +18,42 @@ const sampleId = computed(() => route.params.id as string)
 const originalSample = computed(() => getUserSampleById(sampleId.value))
 const canEdit = computed(() => isUserSample(sampleId.value))
 
-interface FormData {
-  name: string
-  category: SampleCategory | ''
-  lat: string
-  lng: string
-  address: string
-  description: string
-  tags: string[]
-  recordedAt: string
-  durationSec: string
-}
-
-interface FormErrors {
-  name: string
-  category: string
-  lat: string
-  lng: string
-  address: string
-  description: string
-  tags: string
-  recordedAt: string
-  durationSec: string
-}
-
-const form = reactive<FormData>({
+const form = reactive<EditFormData>({
   name: '',
-  category: '',
-  lat: '',
-  lng: '',
   address: '',
   description: '',
   tags: [],
-  recordedAt: '',
-  durationSec: '',
 })
 
-const errors = reactive<FormErrors>({
+const errors = reactive<EditFormErrors>({
   name: '',
-  category: '',
-  lat: '',
-  lng: '',
   address: '',
   description: '',
   tags: '',
-  recordedAt: '',
-  durationSec: '',
 })
 
 const submitting = ref(false)
 const submitSuccess = ref(false)
-
-const mapContainer = ref<HTMLElement | null>(null)
-let map: L.Map | null = null
-let pickerMarker: L.Marker | null = null
+const saveError = ref('')
 
 function loadSampleData() {
   if (!originalSample.value) return
   const s = originalSample.value
   form.name = s.name
-  form.category = s.category
-  form.lat = s.lat.toString()
-  form.lng = s.lng.toString()
   form.address = s.address
   form.description = s.description
   form.tags = [...s.tags]
-  form.recordedAt = formatRecordedAtForInput(s.recordedAt)
-  form.durationSec = s.durationSec.toString()
 }
 
-function formatRecordedAtForInput(dateStr: string): string {
-  const d = new Date(dateStr)
-  const pad = (n: number) => n.toString().padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
-function validate(): boolean {
-  let valid = true
-
-  errors.name = ''
-  errors.category = ''
-  errors.lat = ''
-  errors.lng = ''
-  errors.address = ''
-  errors.description = ''
-  errors.tags = ''
-  errors.recordedAt = ''
-  errors.durationSec = ''
-
-  if (!form.name.trim()) {
-    errors.name = '请输入采样点名称'
-    valid = false
-  } else if (form.name.trim().length > 50) {
-    errors.name = '名称不能超过 50 个字符'
-    valid = false
-  }
-
-  if (!form.category) {
-    errors.category = '请选择分类'
-    valid = false
-  }
-
-  const latNum = parseFloat(form.lat)
-  const lngNum = parseFloat(form.lng)
-
-  if (form.lat === '' || isNaN(latNum)) {
-    errors.lat = '请输入有效的纬度'
-    valid = false
-  } else if (latNum < -90 || latNum > 90) {
-    errors.lat = '纬度范围应在 -90 到 90 之间'
-    valid = false
-  }
-
-  if (form.lng === '' || isNaN(lngNum)) {
-    errors.lng = '请输入有效的经度'
-    valid = false
-  } else if (lngNum < -180 || lngNum > 180) {
-    errors.lng = '经度范围应在 -180 到 180 之间'
-    valid = false
-  }
-
-  if (!form.address.trim()) {
-    errors.address = '请输入地址'
-    valid = false
-  }
-
-  if (!form.description.trim()) {
-    errors.description = '请输入描述'
-    valid = false
-  } else if (form.description.trim().length > 500) {
-    errors.description = '描述不能超过 500 个字符'
-    valid = false
-  }
-
-  if (form.tags.length === 0) {
-    errors.tags = '请至少选择一个标签'
-    valid = false
-  }
-
-  if (!form.recordedAt) {
-    errors.recordedAt = '请选择录制时间'
-    valid = false
-  }
-
-  const durationNum = parseInt(form.durationSec, 10)
-  if (form.durationSec === '' || isNaN(durationNum)) {
-    errors.durationSec = '请输入有效的时长'
-    valid = false
-  } else if (durationNum < 5 || durationNum > 600) {
-    errors.durationSec = '时长范围应在 5 到 600 秒之间'
-    valid = false
-  }
-
-  return valid
-}
-
-function clearError(field: keyof FormErrors) {
+function clearError(field: keyof EditFormErrors) {
   errors[field] = ''
+  saveError.value = ''
 }
 
-watch(
-  () => form.name,
-  () => clearError('name'),
-)
-watch(
-  () => form.category,
-  () => clearError('category'),
-)
-watch(
-  () => form.lat,
-  () => clearError('lat'),
-)
-watch(
-  () => form.lng,
-  () => clearError('lng'),
-)
-watch(
-  () => form.address,
-  () => clearError('address'),
-)
-watch(
-  () => form.description,
-  () => clearError('description'),
-)
-watch(
-  () => form.tags.length,
-  () => clearError('tags'),
-)
-watch(
-  () => form.recordedAt,
-  () => clearError('recordedAt'),
-)
-watch(
-  () => form.durationSec,
-  () => clearError('durationSec'),
-)
+watch(() => form.name, () => clearError('name'))
+watch(() => form.address, () => clearError('address'))
+watch(() => form.description, () => clearError('description'))
+watch(() => form.tags.length, () => clearError('tags'))
 
 function toggleTag(tag: string) {
   const idx = form.tags.indexOf(tag)
@@ -219,115 +64,21 @@ function toggleTag(tag: string) {
   }
 }
 
-function generateTimeDistribution(recordedAtStr: string): TimeSlot[] {
-  const hour = new Date(recordedAtStr).getHours()
-
-  const distributions: Record<string, TimeSlot[]> = {
-    morning: [
-      { period: '06:00-09:00', count: 22 },
-      { period: '09:00-12:00', count: 14 },
-      { period: '12:00-15:00', count: 8 },
-      { period: '15:00-18:00', count: 10 },
-      { period: '18:00-21:00', count: 5 },
-      { period: '21:00-24:00', count: 2 },
-    ],
-    forenoon: [
-      { period: '06:00-09:00', count: 14 },
-      { period: '09:00-12:00', count: 24 },
-      { period: '12:00-15:00', count: 16 },
-      { period: '15:00-18:00', count: 12 },
-      { period: '18:00-21:00', count: 6 },
-      { period: '21:00-24:00', count: 3 },
-    ],
-    noon: [
-      { period: '06:00-09:00', count: 8 },
-      { period: '09:00-12:00', count: 18 },
-      { period: '12:00-15:00', count: 26 },
-      { period: '15:00-18:00', count: 18 },
-      { period: '18:00-21:00', count: 10 },
-      { period: '21:00-24:00', count: 4 },
-    ],
-    afternoon: [
-      { period: '06:00-09:00', count: 6 },
-      { period: '09:00-12:00', count: 12 },
-      { period: '12:00-15:00', count: 20 },
-      { period: '15:00-18:00', count: 28 },
-      { period: '18:00-21:00', count: 16 },
-      { period: '21:00-24:00', count: 6 },
-    ],
-    evening: [
-      { period: '06:00-09:00', count: 4 },
-      { period: '09:00-12:00', count: 8 },
-      { period: '12:00-15:00', count: 12 },
-      { period: '15:00-18:00', count: 22 },
-      { period: '18:00-21:00', count: 30 },
-      { period: '21:00-24:00', count: 14 },
-    ],
-    night: [
-      { period: '06:00-09:00', count: 2 },
-      { period: '09:00-12:00', count: 4 },
-      { period: '12:00-15:00', count: 6 },
-      { period: '15:00-18:00', count: 12 },
-      { period: '18:00-21:00', count: 24 },
-      { period: '21:00-24:00', count: 28 },
-    ],
-    lateNight: [
-      { period: '06:00-09:00', count: 3 },
-      { period: '09:00-12:00', count: 3 },
-      { period: '12:00-15:00', count: 4 },
-      { period: '15:00-18:00', count: 6 },
-      { period: '18:00-21:00', count: 14 },
-      { period: '21:00-24:00', count: 32 },
-    ],
-  }
-
-  let key: string
-  if (hour >= 6 && hour < 9) {
-    key = 'morning'
-  } else if (hour >= 9 && hour < 12) {
-    key = 'forenoon'
-  } else if (hour >= 12 && hour < 15) {
-    key = 'noon'
-  } else if (hour >= 15 && hour < 18) {
-    key = 'afternoon'
-  } else if (hour >= 18 && hour < 21) {
-    key = 'evening'
-  } else if (hour >= 21 && hour < 24) {
-    key = 'night'
-  } else {
-    key = 'lateNight'
-  }
-
-  return distributions[key]
-}
-
-function formatRecordedAt(dateStr: string): string {
-  const d = new Date(dateStr)
-  const pad = (n: number) => n.toString().padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
-}
-
 async function handleSubmit() {
-  if (!validate() || !canEdit.value) return
+  saveError.value = ''
+  const validationErrors = validateEditForm(form)
+  Object.assign(errors, validationErrors)
+
+  if (hasErrors(validationErrors) || !canEdit.value) return
 
   submitting.value = true
 
   try {
-    const latNum = parseFloat(form.lat)
-    const lngNum = parseFloat(form.lng)
-    const durationNum = parseInt(form.durationSec, 10)
-
     const updates: Partial<SamplePoint> = {
       name: form.name.trim(),
-      category: form.category as SampleCategory,
-      tags: [...form.tags],
-      lat: latNum,
-      lng: lngNum,
       address: form.address.trim(),
       description: form.description.trim(),
-      durationSec: durationNum,
-      recordedAt: formatRecordedAt(form.recordedAt),
-      timeDistribution: generateTimeDistribution(form.recordedAt),
+      tags: [...form.tags],
     }
 
     const success = updateUserSample(sampleId.value, updates)
@@ -337,7 +88,11 @@ async function handleSubmit() {
       setTimeout(() => {
         router.push({ name: 'detail', params: { id: sampleId.value } })
       }, 1500)
+    } else {
+      saveError.value = '保存失败，请稍后重试'
     }
+  } catch {
+    saveError.value = '保存失败，发生了未知错误'
   } finally {
     submitting.value = false
   }
@@ -348,89 +103,52 @@ function resetForm() {
   Object.keys(errors).forEach((k) => {
     ;(errors as any)[k] = ''
   })
-}
-
-function onMapClick(e: L.LeafletMouseEvent) {
-  const { lat, lng } = e.latlng
-  form.lat = lat.toFixed(6)
-  form.lng = lng.toFixed(6)
-  updatePickerMarker(lat, lng)
-}
-
-function updatePickerMarker(lat: number, lng: number) {
-  if (!map) return
-  if (pickerMarker) {
-    pickerMarker.setLatLng([lat, lng])
-  } else {
-    pickerMarker = L.marker([lat, lng], {
-      draggable: true,
-      title: '拖动调整位置',
-    }).addTo(map)
-    pickerMarker.on('dragend', (ev) => {
-      const m = ev.target as L.Marker
-      const pos = m.getLatLng()
-      form.lat = pos.lat.toFixed(6)
-      form.lng = pos.lng.toFixed(6)
-    })
-  }
-}
-
-function onLatLngInput() {
-  const lat = parseFloat(form.lat)
-  const lng = parseFloat(form.lng)
-  if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
-    updatePickerMarker(lat, lng)
-    map?.panTo([lat, lng])
-  }
+  saveError.value = ''
 }
 
 function goBack() {
-  router.push({ name: 'detail', params: { id: sampleId.value } })
+  if (originalSample.value) {
+    router.push({ name: 'detail', params: { id: sampleId.value } })
+  } else {
+    router.push('/')
+  }
 }
 
-onMounted(() => {
-  if (!canEdit.value) {
-    router.push('/')
-    return
-  }
-
-  loadSampleData()
-
-  if (!mapContainer.value || !originalSample.value) return
-
-  map = L.map(mapContainer.value, {
-    center: [originalSample.value.lat, originalSample.value.lng],
-    zoom: 14,
-    zoomControl: true,
-  })
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors',
-    maxZoom: 18,
-  }).addTo(map)
-
-  updatePickerMarker(originalSample.value.lat, originalSample.value.lng)
-
-  map.on('click', onMapClick)
-})
-
-onUnmounted(() => {
-  map?.remove()
-  map = null
-})
+loadSampleData()
 </script>
 
 <template>
   <div class="edit">
     <button type="button" class="edit__back btn" @click="goBack">
-      ← 返回详情
+      ← 返回
     </button>
 
     <div v-if="!canEdit" class="edit__empty card">
-      <p>无权编辑该采样点</p>
-      <button type="button" class="btn btn--primary" @click="router.push('/')">
-        返回首页
-      </button>
+      <div class="edit__empty-icon">🔒</div>
+      <h2>无权编辑该采样点</h2>
+      <p>您只能编辑自己提交的采样点</p>
+      <div class="edit__empty-actions">
+        <button type="button" class="btn" @click="router.back()">
+          返回上一页
+        </button>
+        <button type="button" class="btn btn--primary" @click="router.push('/')">
+          返回首页
+        </button>
+      </div>
+    </div>
+
+    <div v-else-if="!originalSample" class="edit__empty card">
+      <div class="edit__empty-icon">❓</div>
+      <h2>采样点不存在</h2>
+      <p>未找到该采样点的相关信息</p>
+      <div class="edit__empty-actions">
+        <button type="button" class="btn" @click="router.back()">
+          返回上一页
+        </button>
+        <button type="button" class="btn btn--primary" @click="router.push('/')">
+          返回首页
+        </button>
+      </div>
     </div>
 
     <div v-else-if="submitSuccess" class="edit__success card">
@@ -445,6 +163,21 @@ onUnmounted(() => {
         <p>修改采样点的信息</p>
       </header>
 
+      <div v-if="originalSample" class="edit__sample-info">
+        <div class="edit__sample-info-item">
+          <span class="edit__sample-info-label">分类</span>
+          <span class="edit__sample-info-value">{{ CATEGORY_LABELS[originalSample.category] }}</span>
+        </div>
+        <div class="edit__sample-info-item">
+          <span class="edit__sample-info-label">录制时间</span>
+          <span class="edit__sample-info-value">{{ originalSample.recordedAt }}</span>
+        </div>
+        <div class="edit__sample-info-item">
+          <span class="edit__sample-info-label">时长</span>
+          <span class="edit__sample-info-value">{{ originalSample.durationSec }} 秒</span>
+        </div>
+      </div>
+
       <form class="edit__form" @submit.prevent="handleSubmit" novalidate>
         <div class="edit__field">
           <label class="edit__label">
@@ -458,51 +191,6 @@ onUnmounted(() => {
             maxlength="50"
           />
           <p v-if="errors.name" class="edit__error">{{ errors.name }}</p>
-        </div>
-
-        <div class="edit__field">
-          <label class="edit__label">
-            分类 <span class="edit__required">*</span>
-          </label>
-          <select v-model="form.category" class="edit__input edit__select">
-            <option value="">请选择分类</option>
-            <option
-              v-for="(label, key) in CATEGORY_LABELS"
-              :key="key"
-              :value="key"
-            >
-              {{ label }}
-            </option>
-          </select>
-          <p v-if="errors.category" class="edit__error">{{ errors.category }}</p>
-        </div>
-
-        <div class="edit__field">
-          <label class="edit__label">
-            经纬度 <span class="edit__required">*</span>
-            <span class="edit__hint">（点击地图或手动输入）</span>
-          </label>
-          <div class="edit__latlng">
-            <input
-              v-model="form.lat"
-              type="number"
-              step="0.000001"
-              class="edit__input"
-              placeholder="纬度 (如: 31.2304)"
-              @change="onLatLngInput"
-            />
-            <input
-              v-model="form.lng"
-              type="number"
-              step="0.000001"
-              class="edit__input"
-              placeholder="经度 (如: 121.4737)"
-              @change="onLatLngInput"
-            />
-          </div>
-          <p v-if="errors.lat" class="edit__error">{{ errors.lat }}</p>
-          <p v-if="errors.lng" class="edit__error">{{ errors.lng }}</p>
-          <div ref="mapContainer" class="edit__map"></div>
         </div>
 
         <div class="edit__field">
@@ -552,34 +240,8 @@ onUnmounted(() => {
           <p v-if="errors.tags" class="edit__error">{{ errors.tags }}</p>
         </div>
 
-        <div class="edit__row">
-          <div class="edit__field edit__field--half">
-            <label class="edit__label">
-              录制时间 <span class="edit__required">*</span>
-            </label>
-            <input
-              v-model="form.recordedAt"
-              type="datetime-local"
-              class="edit__input"
-            />
-            <p v-if="errors.recordedAt" class="edit__error">{{ errors.recordedAt }}</p>
-          </div>
-
-          <div class="edit__field edit__field--half">
-            <label class="edit__label">
-              时长（秒） <span class="edit__required">*</span>
-              <span class="edit__hint">（5-600）</span>
-            </label>
-            <input
-              v-model="form.durationSec"
-              type="number"
-              min="5"
-              max="600"
-              class="edit__input"
-              placeholder="如：45"
-            />
-            <p v-if="errors.durationSec" class="edit__error">{{ errors.durationSec }}</p>
-          </div>
+        <div v-if="saveError" class="edit__save-error">
+          {{ saveError }}
         </div>
 
         <div class="edit__actions">
@@ -598,7 +260,7 @@ onUnmounted(() => {
 <style scoped>
 .edit {
   padding: 20px 24px 32px;
-  max-width: 800px;
+  max-width: 700px;
   margin: 0 auto;
   width: 100%;
 }
@@ -612,7 +274,7 @@ onUnmounted(() => {
 }
 
 .edit__header {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--color-border);
 }
@@ -626,6 +288,33 @@ onUnmounted(() => {
   margin: 0;
   color: var(--color-text-muted);
   font-size: 0.9rem;
+}
+
+.edit__sample-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--color-surface-2);
+  border-radius: 8px;
+}
+
+.edit__sample-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+}
+
+.edit__sample-info-label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.edit__sample-info-value {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .edit__form {
@@ -676,27 +365,9 @@ onUnmounted(() => {
   color: var(--color-text-muted);
 }
 
-.edit__select {
-  cursor: pointer;
-}
-
 .edit__textarea {
   resize: vertical;
   min-height: 80px;
-}
-
-.edit__latlng {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.edit__map {
-  width: 100%;
-  height: 280px;
-  border-radius: 8px;
-  overflow: hidden;
-  margin-top: 4px;
 }
 
 .edit__tags {
@@ -729,16 +400,19 @@ onUnmounted(() => {
   border-color: var(--color-accent);
 }
 
-.edit__row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
 .edit__error {
   margin: 0;
   font-size: 0.8rem;
   color: #ff6b6b;
+}
+
+.edit__save-error {
+  padding: 12px 16px;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.35);
+  border-radius: 8px;
+  color: #ff8a8a;
+  font-size: 0.9rem;
 }
 
 .edit__actions {
@@ -788,11 +462,32 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   min-height: 300px;
   color: var(--color-text-muted);
   padding: 48px 32px;
   text-align: center;
+}
+
+.edit__empty-icon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.edit__empty h2 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: 1.2rem;
+}
+
+.edit__empty p {
+  margin: 0 0 16px;
+}
+
+.edit__empty-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 @keyframes editFadeIn {
@@ -815,17 +510,20 @@ onUnmounted(() => {
     padding: 20px 16px;
   }
 
-  .edit__latlng,
-  .edit__row {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
   .edit__actions {
     flex-direction: column-reverse;
   }
 
   .edit__actions .btn {
+    width: 100%;
+  }
+
+  .edit__empty-actions {
+    flex-direction: column-reverse;
+    width: 100%;
+  }
+
+  .edit__empty-actions .btn {
     width: 100%;
   }
 }
