@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useSearch } from '@/composables/useSearch'
 
-const { searchQuery, isSearchOpen, openSearch, setQuery, clearQuery } = useSearch()
+const { searchQuery, isSearchOpen, openSearch, setQuery, clearQuery, addToSearchHistory } = useSearch()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
@@ -17,11 +17,19 @@ function onClear() {
 }
 
 function onSearchClick() {
+  const trimmed = searchQuery.value.trim()
+  if (trimmed) {
+    addToSearchHistory(trimmed)
+  }
   openSearch()
 }
 
 function onSubmit(e: Event) {
   e.preventDefault()
+  const trimmed = searchQuery.value.trim()
+  if (trimmed) {
+    addToSearchHistory(trimmed)
+  }
   openSearch()
 }
 </script>

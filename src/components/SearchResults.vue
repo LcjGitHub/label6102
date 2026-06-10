@@ -6,11 +6,45 @@ import { useUserSamples } from '@/composables/useUserSamples'
 import { CATEGORY_LABELS } from '@/types/sample'
 
 const router = useRouter()
-const { searchQuery, isSearchOpen, results, closeSearch, setQuery, clearQuery, highlightText } = useSearch()
+const {
+  searchQuery,
+  isSearchOpen,
+  searchHistory,
+  results,
+  closeSearch,
+  setQuery,
+  clearQuery,
+  highlightText,
+  addToSearchHistory,
+  removeFromSearchHistory,
+  clearSearchHistory,
+} = useSearch()
 const { isUserSample } = useUserSamples()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const query = computed(() => searchQuery.value.trim())
+
+function onHistoryClick(historyItem: string) {
+  setQuery(historyItem)
+  inputRef.value?.focus()
+}
+
+function onHistoryRemove(historyItem: string, e: Event) {
+  e.stopPropagation()
+  removeFromSearchHistory(historyItem)
+}
+
+function onClearAllHistory() {
+  clearSearchHistory()
+}
+
+function onSubmitSearch(e: Event) {
+  e.preventDefault()
+  const trimmed = searchQuery.value.trim()
+  if (trimmed) {
+    addToSearchHistory(trimmed)
+  }
+}
 
 function goDetail(id: string) {
   closeSearch()
@@ -51,7 +85,7 @@ watch(isSearchOpen, (open) => {
       <div v-if="isSearchOpen" class="search-overlay" @click="onOverlayClick">
         <div class="search-results" role="dialog" aria-modal="true" aria-label="搜索结果">
           <header class="search-results__header">
-            <div class="search-results__search-bar">
+            <form class="search-results__search-bar" @submit="onSubmitSearch" role="search">
               <svg class="search-results__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -76,7 +110,7 @@ watch(isSearchOpen, (open) => {
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>
               </button>
-            </div>
+            </form>
             <button type="button" class="search-results__close" @click="onClose" aria-label="关闭">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -88,7 +122,53 @@ watch(isSearchOpen, (open) => {
             找到 {{ results.length }} 个匹配「{{ query }}」的结果
           </div>
 
-          <div v-if="!query" class="search-results__hint">
+          <div v-if="!query && searchHistory.length" class="search-history">
+            <div class="search-history__header">
+              <div class="search-history__title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="1 4 1 10 7 10" />
+                  <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                </svg>
+                <span>搜索历史</span>
+              </div>
+              <button type="button" class="search-history__clear-all" @click="onClearAllHistory">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+                <span>清空</span>
+              </button>
+            </div>
+            <ul class="search-history__list">
+              <li
+                v-for="item in searchHistory"
+                :key="item"
+                class="search-history__item"
+                @click="onHistoryClick(item)"
+              >
+                <svg class="search-history__item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+                <span class="search-history__item-text">{{ item }}</span>
+                <button
+                  type="button"
+                  class="search-history__item-remove"
+                  @click="onHistoryRemove(item, $event)"
+                  aria-label="删除此条历史"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <div v-else-if="!query" class="search-results__hint">
             <svg class="search-results__hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -437,6 +517,127 @@ watch(isSearchOpen, (open) => {
 .search-result:hover .search-result__arrow {
   transform: translateX(2px);
   color: var(--color-accent);
+}
+
+.search-history {
+  padding: 12px 16px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.search-history__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 4px 12px;
+}
+
+.search-history__title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.search-history__title svg {
+  width: 15px;
+  height: 15px;
+}
+
+.search-history__clear-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.search-history__clear-all:hover {
+  background: var(--color-surface-2);
+  color: #ff6b6b;
+}
+
+.search-history__clear-all svg {
+  width: 13px;
+  height: 13px;
+}
+
+.search-history__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.search-history__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.search-history__item:hover {
+  background: var(--color-surface-2);
+}
+
+.search-history__item-icon {
+  width: 15px;
+  height: 15px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.search-history__item-text {
+  flex: 1;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.search-history__item-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  opacity: 0;
+}
+
+.search-history__item:hover .search-history__item-remove {
+  opacity: 1;
+}
+
+.search-history__item-remove:hover {
+  background: var(--color-border);
+  color: #ff6b6b;
+}
+
+.search-history__item-remove svg {
+  width: 13px;
+  height: 13px;
 }
 
 .search-results__hint,
