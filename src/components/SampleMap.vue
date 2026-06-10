@@ -26,8 +26,8 @@ function createIcon(point: SamplePoint) {
   const color = iconConfig.color
   const isNew = isUserSample(point.id)
 
-  const size = isNew ? 40 : 32
-  const anchor = size / 2
+  const size = isNew ? 42 : 34
+  const tailHeight = 12
 
   const badgeHtml = isNew
     ? `<div class="sample-marker__badge">新</div>`
@@ -41,10 +41,12 @@ function createIcon(point: SamplePoint) {
 
   return L.divIcon({
     className: 'sample-marker',
-    html: `<div class="sample-marker__pin" style="--pin-color:${color}">${svgHtml}${badgeHtml}</div>`,
-    iconSize: [size, size + 10],
-    iconAnchor: [anchor, size + 10],
-    popupAnchor: [0, -(size + 10)],
+    html: `<div class="sample-marker__pin" style="--pin-size:${size}px;--pin-color:${color};--tail-height:${tailHeight}px">
+        <div class="sample-marker__icon-wrap">${svgHtml}</div>${badgeHtml}
+      </div>`,
+    iconSize: [size, size + tailHeight],
+    iconAnchor: [size / 2, size + tailHeight],
+    popupAnchor: [0, -(size + tailHeight)],
   })
 }
 
@@ -144,44 +146,50 @@ onUnmounted(() => {
 
 :global(.sample-marker__pin) {
   position: relative;
+  width: var(--pin-size);
+  height: calc(var(--pin-size) + var(--tail-height));
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.25));
 }
 
 :global(.sample-marker__pin::after) {
   content: '';
   position: absolute;
-  bottom: -10px;
+  bottom: 0;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
   height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 10px solid #fff;
+  border-left: calc(var(--tail-height) * 0.5) solid transparent;
+  border-right: calc(var(--tail-height) * 0.5) solid transparent;
+  border-top: var(--tail-height) solid var(--pin-color);
+}
+
+:global(.sample-marker__icon-wrap) {
+  position: relative;
+  width: var(--pin-size);
+  height: var(--pin-size);
+  background: #fff;
+  border-radius: 50%;
+  border: 2.5px solid var(--pin-color);
+  padding: 4px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 :global(.sample-marker__icon) {
   width: 100%;
   height: 100%;
-  background: #fff;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  padding: 5px;
-  box-sizing: border-box;
-}
-
-:global(.sample-marker__icon path) {
-  transform: rotate(45deg);
-  transform-origin: center;
 }
 
 :global(.sample-marker__badge) {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -6px;
+  right: -6px;
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
