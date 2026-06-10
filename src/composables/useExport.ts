@@ -9,24 +9,36 @@ export interface ExportProgress {
   format: ExportFormat
 }
 
+export interface ExportSuccess {
+  show: boolean
+  format: ExportFormat
+  filename: string
+}
+
 export function useExport() {
   const isExporting = ref(false)
   const exportProgress = ref<ExportProgress | null>(null)
+  const exportSuccess = ref<ExportSuccess | null>(null)
+
+  const FORMAT_LABELS: Record<ExportFormat, string> = {
+    json: '结构化文本',
+    csv: '表格文本',
+  }
 
   function toCSV(samples: SamplePoint[]): string {
     const headers = [
-      'id',
-      'name',
-      'category',
-      'tags',
-      'lat',
-      'lng',
-      'address',
-      'description',
-      'durationSec',
-      'recordedAt',
-      'timeDistribution',
-      'waveformSeed',
+      '标识',
+      '名称',
+      '类别',
+      '标签',
+      '纬度',
+      '经度',
+      '地址',
+      '描述',
+      '时长(秒)',
+      '录制时间',
+      '时间分布',
+      '波形种子',
     ]
 
     const escape = (value: string): string => {
@@ -73,17 +85,20 @@ export function useExport() {
   }
 
   async function simulateProgress(total: number, format: ExportFormat) {
+    const stepDuration = 800 / Math.max(total, 10)
     exportProgress.value = { current: 0, total, format }
     for (let i = 1; i <= total; i++) {
-      await new Promise((resolve) => setTimeout(resolve, 20))
+      await new Promise((resolve) => setTimeout(resolve, stepDuration))
       exportProgress.value = { current: i, total, format }
     }
+    await new Promise((resolve) => setTimeout(resolve, 300))
   }
 
   async function exportSamples(samples: SamplePoint[], format: ExportFormat) {
     if (isExporting.value || samples.length === 0) return
 
     isExporting.value = true
+    exportSuccess.value = null
 
     try {
       await simulateProgress(samples.length, format)
@@ -99,23 +114,35 @@ export function useExport() {
         filename = `favorites-${dateStr}.json`
         mimeType = 'application/json'
       } else {
-        content = toCSV(samples)
+        content = '\uFEFF' + toCSV(samples)
         filename = `favorites-${dateStr}.csv`
         mimeType = 'text/csv;charset=utf-8;'
       }
 
       downloadFile(content, filename, mimeType)
+
+      exportSuccess.value = { show: true, format, filename }
+      setTimeout(() => {
+        exportSuccess.value = null
+      }, 3000)
     } finally {
       isExporting.value = false
       exportProgress.value = null
     }
   }
 
+  function clearExportSuccess() {
+    exportSuccess.value = null
+  }
+
   return {
     isExporting,
     exportProgress,
+    exportSuccess,
     exportSamples,
     toCSV,
     toJSON,
+    FORMAT_LABELS,
+    clearExportSuccess,
   }
 }
