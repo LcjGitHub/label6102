@@ -41,9 +41,7 @@ export function useSearch() {
           matches.push({ field: 'description', matched: point.description })
         }
 
-        const matchedTags = point.tags.filter((tag) =>
-          tag.toLowerCase().includes(query),
-        )
+        const matchedTags = point.tags.filter((tag) => tag.toLowerCase().includes(query))
         if (matchedTags.length) {
           matchedTags.forEach((tag) => {
             matches.push({ field: 'tags', matched: tag })
