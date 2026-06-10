@@ -1,6 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { SamplePoint } from '@/types/sample'
+
+type ToastType = 'success' | 'error'
+interface ToastState {
+  visible: boolean
+  type: ToastType
+  message: string
+}
 
 const props = defineProps<{
   visible: boolean
@@ -11,63 +18,103 @@ const emit = defineEmits<{
   (e: 'close'): void
 }>()
 
-const copied = ref(false)
-const wechatCopied = ref(false)
+const wechatExpanded = ref(false)
+const toast = ref<ToastState>({
+  visible: false,
+  type: 'success',
+  message: '',
+})
+let toastTimer: ReturnType<typeof setTimeout> | null = null
 
 const shareUrl = computed(() => {
   return `${window.location.origin}/sample/${props.sample.id}`
 })
 
-const shareText = computed(() => {
-  return `${props.sample.name} - ${props.sample.address}\n${props.sample.description}`
+const fullShareText = computed(() => {
+  return `${props.sample.name}\n${props.sample.address}\n${props.sample.description}\n\n${shareUrl.value}`
+})
+
+const shareTitle = computed(() => {
+  return `${props.sample.name} - ${props.sample.address}`
+})
+
+const shareSummary = computed(() => {
+  return props.sample.description
+})
+
+const qrCodeUrl = computed(() => {
+  const encoded = encodeURIComponent(shareUrl.value)
+  return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&margin=10&data=${encoded}`
 })
 
 const weiboShareUrl = computed(() => {
-  const title = encodeURIComponent(`${props.sample.name} - 城市声音采样`)
+  const title = encodeURIComponent(`${shareTitle.value}\n${shareSummary.value}`)
   const url = encodeURIComponent(shareUrl.value)
-  const summary = encodeURIComponent(props.sample.description)
-  return `https://service.weibo.com/share/share.php?url=${url}&title=${title}&summary=${summary}`
+  return `https://service.weibo.com/share/share.php?url=${url}&title=${title}`
 })
 
 const qqShareUrl = computed(() => {
-  const title = encodeURIComponent(`${props.sample.name} - 城市声音采样`)
+  const title = encodeURIComponent(shareTitle.value)
   const url = encodeURIComponent(shareUrl.value)
-  const summary = encodeURIComponent(props.sample.description)
+  const summary = encodeURIComponent(shareSummary.value)
   const desc = encodeURIComponent(props.sample.address)
   return `https://connect.qq.com/widget/shareqq/index.html?url=${url}&title=${title}&summary=${summary}&desc=${desc}`
 })
 
+function showToast(type: ToastType, message: string) {
+  if (toastTimer) {
+    clearTimeout(toastTimer)
+    toastTimer = null
+  }
+  toast.value = { visible: true, type, message }
+  toastTimer = setTimeout(() => {
+    toast.value.visible = false
+    toastTimer = null
+  }, 2500)
+}
+
 async function copyLink() {
   try {
     await navigator.clipboard.writeText(shareUrl.value)
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
+    showToast('success', '链接已复制到剪贴板')
   } catch (err) {
     console.error('复制失败:', err)
+    showToast('error', '复制失败，请重试')
   }
+}
+
+function toggleWechat() {
+  wechatExpanded.value = !wechatExpanded.value
 }
 
 async function copyWechatText() {
   try {
-    const text = `${shareText.value}\n\n${shareUrl.value}`
-    await navigator.clipboard.writeText(text)
-    wechatCopied.value = true
-    setTimeout(() => {
-      wechatCopied.value = false
-    }, 2000)
+    await navigator.clipboard.writeText(fullShareText.value)
+    showToast('success', '微信分享文案已复制')
   } catch (err) {
     console.error('复制失败:', err)
+    showToast('error', '复制失败，请重试')
   }
 }
 
 function openWeibo() {
-  window.open(weiboShareUrl.value, '_blank', 'width=600,height=500')
+  try {
+    window.open(weiboShareUrl.value, '_blank', 'width=600,height=500')
+    showToast('success', '已打开微博分享页面')
+  } catch (err) {
+    console.error('打开失败:', err)
+    showToast('error', '打开失败，请重试')
+  }
 }
 
 function openQQ() {
-  window.open(qqShareUrl.value, '_blank', 'width=600,height=500')
+  try {
+    window.open(qqShareUrl.value, '_blank', 'width=600,height=500')
+    showToast('success', '已打开QQ分享页面')
+  } catch (err) {
+    console.error('打开失败:', err)
+    showToast('error', '打开失败，请重试')
+  }
 }
 
 function handleOverlayClick() {
@@ -77,6 +124,20 @@ function handleOverlayClick() {
 function handleContentClick(e: Event) {
   e.stopPropagation()
 }
+
+watch(
+  () => props.visible,
+  (val) => {
+    if (val) {
+      wechatExpanded.value = false
+      toast.value.visible = false
+      if (toastTimer) {
+        clearTimeout(toastTimer)
+        toastTimer = null
+      }
+    }
+  }
+)
 </script>
 
 <template>
@@ -99,6 +160,24 @@ function handleContentClick(e: Event) {
             </button>
           </div>
 
+          <Transition name="toast">
+            <div
+              v-if="toast.visible"
+              class="share-modal__toast"
+              :class="`share-modal__toast--${toast.type}`"
+            >
+              <svg v-if="toast.type === 'success'" class="share-modal__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              <svg v-else class="share-modal__toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <span>{{ toast.message }}</span>
+            </div>
+          </Transition>
+
           <div class="share-modal__info">
             <div class="share-modal__info-name">{{ sample.name }}</div>
             <div class="share-modal__info-address">{{ sample.address }}</div>
@@ -116,24 +195,24 @@ function handleContentClick(e: Event) {
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
               </div>
-              <span class="share-modal__label">
-                {{ copied ? '已复制!' : '复制链接' }}
-              </span>
+              <span class="share-modal__label">复制链接</span>
             </button>
 
             <button
               type="button"
               class="share-modal__option"
-              @click="copyWechatText"
+              :class="{ 'share-modal__option--active': wechatExpanded }"
+              @click="toggleWechat"
             >
               <div class="share-modal__icon share-modal__icon--wechat">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.269-.03-.406-.03zm-2.53 3.274c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z" />
                 </svg>
               </div>
-              <span class="share-modal__label">
-                {{ wechatCopied ? '已复制!' : '微信' }}
-              </span>
+              <span class="share-modal__label">微信</span>
+              <svg class="share-modal__chevron" :class="{ 'share-modal__chevron--up': wechatExpanded }" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
             </button>
 
             <button
@@ -162,6 +241,28 @@ function handleContentClick(e: Event) {
               <span class="share-modal__label">QQ</span>
             </button>
           </div>
+
+          <Transition name="expand">
+            <div v-if="wechatExpanded" class="share-modal__wechat">
+              <div class="share-modal__qr-wrapper">
+                <img :src="qrCodeUrl" alt="微信扫码" class="share-modal__qr" referrerpolicy="no-referrer" />
+                <div class="share-modal__qr-tip">使用微信扫一扫</div>
+              </div>
+              <div class="share-modal__wechat-actions">
+                <button
+                  type="button"
+                  class="btn btn--primary share-modal__wechat-copy"
+                  @click="copyWechatText"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                  </svg>
+                  复制分享文案
+                </button>
+              </div>
+            </div>
+          </Transition>
 
           <div class="share-modal__footer">
             <button
@@ -192,7 +293,7 @@ function handleContentClick(e: Event) {
 
 .share-modal__content {
   width: 90%;
-  max-width: 420px;
+  max-width: 440px;
   padding: 24px;
   position: relative;
 }
@@ -222,6 +323,7 @@ function handleContentClick(e: Event) {
   color: var(--color-text-muted);
   border-radius: 6px;
   transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .share-modal__close:hover {
@@ -232,6 +334,39 @@ function handleContentClick(e: Event) {
 .share-modal__close svg {
   width: 20px;
   height: 20px;
+}
+
+.share-modal__toast {
+  position: absolute;
+  top: 56px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  white-space: nowrap;
+}
+
+.share-modal__toast--success {
+  background: rgba(7, 193, 96, 0.95);
+  color: #fff;
+}
+
+.share-modal__toast--error {
+  background: rgba(255, 77, 109, 0.95);
+  color: #fff;
+}
+
+.share-modal__toast-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
 }
 
 .share-modal__info {
@@ -255,16 +390,17 @@ function handleContentClick(e: Event) {
 .share-modal__options {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .share-modal__option {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 16px 8px;
+  padding: 14px 6px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius);
   background: var(--color-surface-2);
@@ -276,6 +412,11 @@ function handleContentClick(e: Event) {
   border-color: var(--color-accent);
   background: var(--color-accent-dim);
   transform: translateY(-2px);
+}
+
+.share-modal__option--active {
+  border-color: rgba(7, 193, 96, 0.6);
+  background: rgba(7, 193, 96, 0.12);
 }
 
 .share-modal__icon {
@@ -322,6 +463,64 @@ function handleContentClick(e: Event) {
   color: var(--color-text);
 }
 
+.share-modal__chevron {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.share-modal__chevron--up {
+  transform: rotate(180deg);
+}
+
+.share-modal__wechat {
+  background: var(--color-surface-2);
+  border: 1px solid rgba(7, 193, 96, 0.3);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.share-modal__qr-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.share-modal__qr {
+  width: 180px;
+  height: 180px;
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px;
+  box-sizing: content-box;
+}
+
+.share-modal__qr-tip {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.share-modal__wechat-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.share-modal__wechat-copy {
+  min-width: 160px;
+}
+
+.share-modal__wechat-copy svg {
+  width: 16px;
+  height: 16px;
+}
+
 .share-modal__footer {
   display: flex;
   justify-content: center;
@@ -352,13 +551,36 @@ function handleContentClick(e: Event) {
   transform: scale(0.95) translateY(10px);
 }
 
+.toast-enter-active,
+.toast-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+
+.expand-enter-active,
+.expand-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  overflow: hidden;
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
 @media (max-width: 480px) {
   .share-modal__content {
     padding: 20px;
   }
 
   .share-modal__options {
-    gap: 12px;
+    gap: 10px;
   }
 
   .share-modal__option {
@@ -373,6 +595,11 @@ function handleContentClick(e: Event) {
   .share-modal__icon svg {
     width: 24px;
     height: 24px;
+  }
+
+  .share-modal__qr {
+    width: 160px;
+    height: 160px;
   }
 }
 </style>

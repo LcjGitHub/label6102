@@ -66,7 +66,6 @@ function closeShareModal() {
                   <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
                   <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
                 </svg>
-                <span class="share-btn__text">分享</span>
               </button>
             </div>
           </div>
@@ -190,8 +189,10 @@ function closeShareModal() {
 .share-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--color-border);
   background: var(--color-surface-2);
@@ -208,10 +209,6 @@ function closeShareModal() {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
-}
-
-.share-btn__text {
-  font-size: 0.85rem;
 }
 
 .detail__title {
