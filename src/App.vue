@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import { RouterLink, RouterView, useRouter } from 'vue-router'
+import { RouterLink, RouterView } from 'vue-router'
 import { useFavorites } from '@/composables/useFavorites'
 import SearchBox from '@/components/SearchBox.vue'
 import SearchResults from '@/components/SearchResults.vue'
 
-const router = useRouter()
 const { favorites } = useFavorites()
-
-function goSubmit() {
-  router.push({ name: 'submit' })
-}
 </script>
 
 <template>
@@ -22,13 +17,6 @@ function goSubmit() {
       <p class="brand-sub">探索城市声景 · Mock 数据演示</p>
       <SearchBox />
       <nav class="app-nav">
-        <button type="button" class="nav-link nav-link--submit" @click="goSubmit">
-          <svg class="nav-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-          <span>提交采样点</span>
-        </button>
         <RouterLink to="/favorites" class="nav-link">
           <svg class="nav-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
@@ -80,19 +68,6 @@ function goSubmit() {
 .nav-link:hover {
   background: var(--color-border);
   border-color: var(--color-accent);
-}
-
-.nav-link--submit {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #0a1218;
-  font-weight: 600;
-}
-
-.nav-link--submit:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  filter: brightness(1.08);
 }
 
 .nav-link__icon {

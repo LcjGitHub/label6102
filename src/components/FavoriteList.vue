@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useFavorites } from '@/composables/useFavorites'
+import { useUserSamples } from '@/composables/useUserSamples'
 import { CATEGORY_LABELS } from '@/types/sample'
 import type { SamplePoint } from '@/types/sample'
 
@@ -10,6 +11,7 @@ defineProps<{
 
 const router = useRouter()
 const { removeFavorite } = useFavorites()
+const { isUserSample } = useUserSamples()
 
 function goDetail(id: string) {
   router.push({ name: 'detail', params: { id } })
@@ -34,7 +36,10 @@ function handleRemove(e: Event, id: string) {
       @click="goDetail(point.id)"
     >
       <div class="fav-list__card-head">
-        <strong class="fav-list__card-title">{{ point.name }}</strong>
+        <div class="fav-list__card-title-wrap">
+          <strong class="fav-list__card-title">{{ point.name }}</strong>
+          <span v-if="isUserSample(point.id)" class="fav-list__new-badge">新</span>
+        </div>
         <span class="fav-list__category">{{ categoryLabel(point) }}</span>
       </div>
       <p class="fav-list__address">{{ point.address }}</p>
@@ -101,8 +106,41 @@ function handleRemove(e: Event, id: string) {
   gap: 8px;
 }
 
+.fav-list__card-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .fav-list__card-title {
   font-size: 1.05rem;
+}
+
+.fav-list__new-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: favNewBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes favNewBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0);
+  }
 }
 
 .fav-list__category {

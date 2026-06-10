@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { reactive, ref, onMounted, onUnmounted } from 'vue'
+import { reactive, ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import L from 'leaflet'
 import { useUserSamples } from '@/composables/useUserSamples'
@@ -146,6 +146,47 @@ function validate(): boolean {
   return valid
 }
 
+function clearError(field: keyof FormErrors) {
+  errors[field] = ''
+}
+
+watch(
+  () => form.name,
+  () => clearError('name'),
+)
+watch(
+  () => form.category,
+  () => clearError('category'),
+)
+watch(
+  () => form.lat,
+  () => clearError('lat'),
+)
+watch(
+  () => form.lng,
+  () => clearError('lng'),
+)
+watch(
+  () => form.address,
+  () => clearError('address'),
+)
+watch(
+  () => form.description,
+  () => clearError('description'),
+)
+watch(
+  () => form.tags.length,
+  () => clearError('tags'),
+)
+watch(
+  () => form.recordedAt,
+  () => clearError('recordedAt'),
+)
+watch(
+  () => form.durationSec,
+  () => clearError('durationSec'),
+)
+
 function toggleTag(tag: string) {
   const idx = form.tags.indexOf(tag)
   if (idx >= 0) {
@@ -157,21 +198,84 @@ function toggleTag(tag: string) {
 
 function generateTimeDistribution(recordedAtStr: string): TimeSlot[] {
   const hour = new Date(recordedAtStr).getHours()
-  const periods = [
-    { period: '06:00-09:00', range: [6, 9] },
-    { period: '09:00-12:00', range: [9, 12] },
-    { period: '12:00-15:00', range: [12, 15] },
-    { period: '15:00-18:00', range: [15, 18] },
-    { period: '18:00-21:00', range: [18, 21] },
-    { period: '21:00-24:00', range: [21, 24] },
-  ]
-  return periods.map((p) => {
-    const inRange = hour >= p.range[0] && hour < p.range[1]
-    return {
-      period: p.period,
-      count: inRange ? Math.floor(Math.random() * 20) + 10 : Math.floor(Math.random() * 8),
-    }
-  })
+
+  const distributions: Record<string, TimeSlot[]> = {
+    morning: [
+      { period: '06:00-09:00', count: 22 },
+      { period: '09:00-12:00', count: 14 },
+      { period: '12:00-15:00', count: 8 },
+      { period: '15:00-18:00', count: 10 },
+      { period: '18:00-21:00', count: 5 },
+      { period: '21:00-24:00', count: 2 },
+    ],
+    forenoon: [
+      { period: '06:00-09:00', count: 14 },
+      { period: '09:00-12:00', count: 24 },
+      { period: '12:00-15:00', count: 16 },
+      { period: '15:00-18:00', count: 12 },
+      { period: '18:00-21:00', count: 6 },
+      { period: '21:00-24:00', count: 3 },
+    ],
+    noon: [
+      { period: '06:00-09:00', count: 8 },
+      { period: '09:00-12:00', count: 18 },
+      { period: '12:00-15:00', count: 26 },
+      { period: '15:00-18:00', count: 18 },
+      { period: '18:00-21:00', count: 10 },
+      { period: '21:00-24:00', count: 4 },
+    ],
+    afternoon: [
+      { period: '06:00-09:00', count: 6 },
+      { period: '09:00-12:00', count: 12 },
+      { period: '12:00-15:00', count: 20 },
+      { period: '15:00-18:00', count: 28 },
+      { period: '18:00-21:00', count: 16 },
+      { period: '21:00-24:00', count: 6 },
+    ],
+    evening: [
+      { period: '06:00-09:00', count: 4 },
+      { period: '09:00-12:00', count: 8 },
+      { period: '12:00-15:00', count: 12 },
+      { period: '15:00-18:00', count: 22 },
+      { period: '18:00-21:00', count: 30 },
+      { period: '21:00-24:00', count: 14 },
+    ],
+    night: [
+      { period: '06:00-09:00', count: 2 },
+      { period: '09:00-12:00', count: 4 },
+      { period: '12:00-15:00', count: 6 },
+      { period: '15:00-18:00', count: 12 },
+      { period: '18:00-21:00', count: 24 },
+      { period: '21:00-24:00', count: 28 },
+    ],
+    lateNight: [
+      { period: '06:00-09:00', count: 3 },
+      { period: '09:00-12:00', count: 3 },
+      { period: '12:00-15:00', count: 4 },
+      { period: '15:00-18:00', count: 6 },
+      { period: '18:00-21:00', count: 14 },
+      { period: '21:00-24:00', count: 32 },
+    ],
+  }
+
+  let key: string
+  if (hour >= 6 && hour < 9) {
+    key = 'morning'
+  } else if (hour >= 9 && hour < 12) {
+    key = 'forenoon'
+  } else if (hour >= 12 && hour < 15) {
+    key = 'noon'
+  } else if (hour >= 15 && hour < 18) {
+    key = 'afternoon'
+  } else if (hour >= 18 && hour < 21) {
+    key = 'evening'
+  } else if (hour >= 21 && hour < 24) {
+    key = 'night'
+  } else {
+    key = 'lateNight'
+  }
+
+  return distributions[key]
 }
 
 function formatRecordedAt(dateStr: string): string {
@@ -363,7 +467,7 @@ onUnmounted(() => {
             />
           </div>
           <p v-if="errors.lat" class="submit__error">{{ errors.lat }}</p>
-          <p v-else-if="errors.lng" class="submit__error">{{ errors.lng }}</p>
+          <p v-if="errors.lng" class="submit__error">{{ errors.lng }}</p>
           <div ref="mapContainer" class="submit__map"></div>
         </div>
 

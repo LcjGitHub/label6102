@@ -2,10 +2,12 @@
 import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSearch } from '@/composables/useSearch'
+import { useUserSamples } from '@/composables/useUserSamples'
 import { CATEGORY_LABELS } from '@/types/sample'
 
 const router = useRouter()
 const { searchQuery, isSearchOpen, results, closeSearch, setQuery, clearQuery, highlightText } = useSearch()
+const { isUserSample } = useUserSamples()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 const query = computed(() => searchQuery.value.trim())
@@ -104,12 +106,15 @@ watch(isSearchOpen, (open) => {
             >
               <div class="search-result__main">
                 <div class="search-result__head">
-                  <h3 class="search-result__name">
-                    <template v-for="(seg, idx) in highlightText(result.point.name, query)" :key="idx">
-                      <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
-                      <span v-else>{{ seg.text }}</span>
-                    </template>
-                  </h3>
+                  <div class="search-result__name-wrap">
+                    <h3 class="search-result__name">
+                      <template v-for="(seg, idx) in highlightText(result.point.name, query)" :key="idx">
+                        <mark v-if="seg.highlight" class="hl">{{ seg.text }}</mark>
+                        <span v-else>{{ seg.text }}</span>
+                      </template>
+                    </h3>
+                    <span v-if="isUserSample(result.point.id)" class="search-result__new-badge">新</span>
+                  </div>
                   <span class="search-result__category">{{ CATEGORY_LABELS[result.point.category] }}</span>
                 </div>
                 <p class="search-result__address">
@@ -344,10 +349,43 @@ watch(isSearchOpen, (open) => {
   margin-bottom: 4px;
 }
 
+.search-result__name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
 .search-result__name {
   margin: 0;
   font-size: 1rem;
   font-weight: 600;
+}
+
+.search-result__new-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: searchNewBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes searchNewBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0);
+  }
 }
 
 .search-result__category {
