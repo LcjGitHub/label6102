@@ -3,6 +3,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue'
 import L from 'leaflet'
 import type { SamplePoint } from '@/types/sample'
 import { CATEGORY_LABELS } from '@/types/sample'
+import { useUserSamples } from '@/composables/useUserSamples'
 
 const props = defineProps<{
   points: SamplePoint[]
@@ -12,13 +13,15 @@ const emit = defineEmits<{
   select: [id: string]
 }>()
 
+const { isUserSample } = useUserSamples()
+
 const mapContainer = ref<HTMLElement | null>(null)
 let map: L.Map | null = null
 let markerLayer: L.LayerGroup | null = null
 
 const SHANGHAI_CENTER: L.LatLngExpression = [31.2304, 121.4737]
 
-function createIcon(category: SamplePoint['category']) {
+function createIcon(point: SamplePoint) {
   const colors: Record<SamplePoint['category'], string> = {
     park: '#4caf50',
     metro: '#2196f3',
@@ -29,13 +32,18 @@ function createIcon(category: SamplePoint['category']) {
     plaza: '#00bcd4',
   }
 
-  const color = colors[category]
+  const color = colors[point.category]
+  const isNew = isUserSample(point.id)
+
+  const badgeHtml = isNew
+    ? `<div class="sample-marker__badge">新</div>`
+    : ''
 
   return L.divIcon({
     className: 'sample-marker',
-    html: `<div class="sample-marker__dot" style="background:${color};box-shadow:0 0 0 3px ${color}44"></div>`,
-    iconSize: [16, 16],
-    iconAnchor: [8, 8],
+    html: `<div class="sample-marker__dot" style="background:${color};box-shadow:0 0 0 3px ${color}44"></div>${badgeHtml}`,
+    iconSize: isNew ? [32, 32] : [16, 16],
+    iconAnchor: isNew ? [16, 16] : [8, 8],
   })
 }
 
@@ -46,12 +54,19 @@ function renderMarkers() {
 
   props.points.forEach((point) => {
     const marker = L.marker([point.lat, point.lng], {
-      icon: createIcon(point.category),
+      icon: createIcon(point),
     })
+
+    const isNew = isUserSample(point.id)
+    const newBadgeHtml = isNew
+      ? '<span style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;background:linear-gradient(135deg,#ff6b6b,#ff8e53);color:#fff;font-size:11px;font-weight:700">新</span>'
+      : ''
 
     const popupHtml = `
       <div class="map-popup">
-        <strong>${point.name}</strong>
+        <div style="display:flex;align-items:center">
+          <strong>${point.name}</strong>${newBadgeHtml}
+        </div>
         <div style="font-size:12px;color:#8b9cb3;margin:4px 0">${CATEGORY_LABELS[point.category]}</div>
         <div style="font-size:12px;margin-bottom:8px">${point.tags.map((t) => `<span style="display:inline-block;margin:2px 4px 2px 0;padding:1px 6px;border-radius:999px;background:rgba(91,141,239,0.2);font-size:11px">${t}</span>`).join('')}</div>
         <a href="#" class="popup-link">查看详情 →</a>
@@ -131,5 +146,39 @@ onUnmounted(() => {
   height: 14px;
   border-radius: 50%;
   border: 2px solid #fff;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+:global(.sample-marker__badge) {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  border: 2px solid #fff;
+  animation: mapBadgePulse 2s ease-in-out infinite;
+  z-index: 1000;
+}
+
+@keyframes mapBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0);
+  }
 }
 </style>

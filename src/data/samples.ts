@@ -1,6 +1,8 @@
+import { computed } from 'vue'
 import type { SamplePoint } from '@/types/sample'
+import { useUserSamples } from '@/composables/useUserSamples'
 
-export const samplePoints: SamplePoint[] = [
+const builtinSamples: SamplePoint[] = [
   {
     id: 'sp-001',
     name: '人民公园东门',
@@ -318,12 +320,18 @@ export const samplePoints: SamplePoint[] = [
   },
 ]
 
+const { userSamples, getUserSampleById } = useUserSamples()
+
+export const samplePoints = computed(() => [...userSamples.value, ...builtinSamples])
+
 export function getSampleById(id: string): SamplePoint | undefined {
-  return samplePoints.find((p) => p.id === id)
+  const userSample = getUserSampleById(id)
+  if (userSample) return userSample
+  return builtinSamples.find((p) => p.id === id)
 }
 
 export function getAllTags(): string[] {
   const tagSet = new Set<string>()
-  samplePoints.forEach((p) => p.tags.forEach((t) => tagSet.add(t)))
+  samplePoints.value.forEach((p) => p.tags.forEach((t) => tagSet.add(t)))
   return Array.from(tagSet).sort()
 }

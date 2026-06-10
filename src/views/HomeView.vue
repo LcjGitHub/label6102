@@ -4,18 +4,21 @@ import { useRouter, RouterLink } from 'vue-router'
 import SampleMap from '@/components/SampleMap.vue'
 import TagFilter from '@/components/TagFilter.vue'
 import { useFavorites } from '@/composables/useFavorites'
+import { useUserSamples } from '@/composables/useUserSamples'
 import { samplePoints, getAllTags } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
 import type { SamplePoint } from '@/types/sample'
 
 const router = useRouter()
 const { favorites } = useFavorites()
+const { isUserSample } = useUserSamples()
 const allTags = getAllTags()
 const selectedTags = ref<string[]>([])
 
 const filteredPoints = computed(() => {
-  if (!selectedTags.value.length) return samplePoints
-  return samplePoints.filter((p) =>
+  const points = samplePoints.value
+  if (!selectedTags.value.length) return points
+  return points.filter((p) =>
     selectedTags.value.every((tag) => p.tags.includes(tag)),
   )
 })
@@ -40,11 +43,25 @@ function goDetail(id: string) {
 function categoryLabel(point: SamplePoint) {
   return CATEGORY_LABELS[point.category]
 }
+
+function goSubmit() {
+  router.push({ name: 'submit' })
+}
 </script>
 
 <template>
   <div class="home">
     <aside class="home__sidebar card">
+      <div class="home__submit-bar">
+        <button type="button" class="btn btn--primary home__submit-btn" @click="goSubmit">
+          <svg class="home__submit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>提交采样点</span>
+        </button>
+      </div>
+
       <TagFilter
         :tags="allTags"
         :selected="selectedTags"
@@ -74,7 +91,10 @@ function categoryLabel(point: SamplePoint) {
           @click="goDetail(point.id)"
         >
           <div class="home__item-head">
-            <strong>{{ point.name }}</strong>
+            <div class="home__item-title">
+              <strong>{{ point.name }}</strong>
+              <span v-if="isUserSample(point.id)" class="home__new-badge">新</span>
+            </div>
             <span class="home__category">{{ categoryLabel(point) }}</span>
           </div>
           <p class="home__address">{{ point.address }}</p>
@@ -109,6 +129,21 @@ function categoryLabel(point: SamplePoint) {
   flex-direction: column;
   overflow: hidden;
   max-height: calc(100vh - 80px);
+}
+
+.home__submit-bar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.home__submit-btn {
+  width: 100%;
+}
+
+.home__submit-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .home__stats {
@@ -172,6 +207,45 @@ function categoryLabel(point: SamplePoint) {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+}
+
+.home__item-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.home__item-title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home__new-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+  animation: newBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes newBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0);
+  }
 }
 
 .home__category {

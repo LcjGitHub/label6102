@@ -11,7 +11,7 @@ const { favorites } = useFavorites()
 
 const favoriteSamples = computed<SamplePoint[]>(() => {
   return favorites.value
-    .map((id) => samplePoints.find((p) => p.id === id))
+    .map((id) => samplePoints.value.find((p) => p.id === id))
     .filter((p): p is SamplePoint => p !== undefined)
 })
 </script>

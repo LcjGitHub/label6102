@@ -6,12 +6,14 @@ import TimeDistribution from '@/components/TimeDistribution.vue'
 import FavoriteButton from '@/components/FavoriteButton.vue'
 import { getSampleById } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
+import { useUserSamples } from '@/composables/useUserSamples'
 
 const props = defineProps<{
   id: string
 }>()
 
 const router = useRouter()
+const { isUserSample } = useUserSamples()
 
 const sample = computed(() => getSampleById(props.id))
 </script>
@@ -28,6 +30,7 @@ const sample = computed(() => getSampleById(props.id))
           <span class="detail__category">{{ CATEGORY_LABELS[sample.category] }}</span>
           <div class="detail__title-row">
             <h1 class="detail__title">{{ sample.name }}</h1>
+            <span v-if="isUserSample(sample.id)" class="detail__new-badge">新</span>
             <FavoriteButton :sample-id="sample.id" />
           </div>
           <p class="detail__address">{{ sample.address }}</p>
@@ -136,6 +139,31 @@ const sample = computed(() => getSampleById(props.id))
 .detail__title {
   margin: 0;
   font-size: 1.6rem;
+}
+
+.detail__new-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 5px;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  animation: detailBadgePulse 2s ease-in-out infinite;
+}
+
+@keyframes detailBadgePulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(255, 107, 107, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 5px rgba(255, 107, 107, 0);
+  }
 }
 
 .detail__address {
