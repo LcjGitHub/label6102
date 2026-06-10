@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
 import { useFavorites } from '@/composables/useFavorites'
+import SearchBox from '@/components/SearchBox.vue'
+import SearchResults from '@/components/SearchResults.vue'
 
 const { favorites } = useFavorites()
 </script>
@@ -13,6 +15,7 @@ const { favorites } = useFavorites()
         <span class="brand-text">城市声音采样</span>
       </RouterLink>
       <p class="brand-sub">探索城市声景 · Mock 数据演示</p>
+      <SearchBox />
       <nav class="app-nav">
         <RouterLink to="/favorites" class="nav-link">
           <svg class="nav-link__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -28,6 +31,7 @@ const { favorites } = useFavorites()
     <main class="app-main">
       <RouterView />
     </main>
+    <SearchResults />
   </div>
 </template>
 
