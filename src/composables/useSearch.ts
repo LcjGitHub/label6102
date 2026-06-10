@@ -22,7 +22,7 @@ export function useSearch() {
     const query = normalizedQuery.value
     if (!query) return []
 
-    return samplePoints
+    return samplePoints.value
       .map((point) => {
         const matches: SearchMatch[] = []
 
