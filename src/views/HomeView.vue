@@ -47,6 +47,10 @@ function categoryLabel(point: SamplePoint) {
 function goSubmit() {
   router.push({ name: 'submit' })
 }
+
+function goStats() {
+  router.push({ name: 'stats' })
+}
 </script>
 
 <template>
@@ -71,6 +75,17 @@ function goSubmit() {
 
       <div class="home__stats">
         <span>共 {{ filteredPoints.length }} / {{ samplePoints.length }} 个采样点</span>
+      </div>
+
+      <div class="home__fav-link">
+        <button type="button" class="btn home__stats-btn" @click="goStats">
+          <svg class="home__stats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>数据统计</span>
+        </button>
       </div>
 
       <div class="home__fav-link">
@@ -161,6 +176,17 @@ function goSubmit() {
 .home__fav-btn {
   width: 100%;
   justify-content: center;
+}
+
+.home__stats-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.home__stats-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 .home__fav-icon {
