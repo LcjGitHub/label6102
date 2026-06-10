@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WaveformPlaceholder from '@/components/WaveformPlaceholder.vue'
 import TimeDistribution from '@/components/TimeDistribution.vue'
+import FavoriteButton from '@/components/FavoriteButton.vue'
 import { getSampleById } from '@/data/samples'
 import { CATEGORY_LABELS } from '@/types/sample'
 
@@ -22,20 +23,25 @@ const sample = computed(() => getSampleById(props.id))
     </button>
 
     <header class="detail__header card">
-      <div>
-        <span class="detail__category">{{ CATEGORY_LABELS[sample.category] }}</span>
-        <h1 class="detail__title">{{ sample.name }}</h1>
-        <p class="detail__address">{{ sample.address }}</p>
-        <p class="detail__desc">{{ sample.description }}</p>
-      </div>
-      <div class="detail__meta">
-        <div class="detail__meta-item">
-          <span class="detail__meta-label">录制时间</span>
-          <span>{{ sample.recordedAt }}</span>
+      <div class="detail__header-main">
+        <div>
+          <span class="detail__category">{{ CATEGORY_LABELS[sample.category] }}</span>
+          <div class="detail__title-row">
+            <h1 class="detail__title">{{ sample.name }}</h1>
+            <FavoriteButton :sample-id="sample.id" />
+          </div>
+          <p class="detail__address">{{ sample.address }}</p>
+          <p class="detail__desc">{{ sample.description }}</p>
         </div>
-        <div class="detail__meta-item">
-          <span class="detail__meta-label">时长</span>
-          <span>{{ sample.durationSec }} 秒</span>
+        <div class="detail__meta">
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">录制时间</span>
+            <span>{{ sample.recordedAt }}</span>
+          </div>
+          <div class="detail__meta-item">
+            <span class="detail__meta-label">时长</span>
+            <span>{{ sample.durationSec }} 秒</span>
+          </div>
         </div>
       </div>
     </header>
@@ -100,11 +106,14 @@ const sample = computed(() => getSampleById(props.id))
 }
 
 .detail__header {
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.detail__header-main {
   display: flex;
   justify-content: space-between;
   gap: 24px;
-  padding: 20px 24px;
-  margin-bottom: 16px;
 }
 
 .detail__category {
@@ -117,8 +126,15 @@ const sample = computed(() => getSampleById(props.id))
   margin-bottom: 8px;
 }
 
+.detail__title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
 .detail__title {
-  margin: 0 0 6px;
+  margin: 0;
   font-size: 1.6rem;
 }
 
@@ -199,8 +215,12 @@ const sample = computed(() => getSampleById(props.id))
 }
 
 @media (max-width: 800px) {
-  .detail__header {
+  .detail__header-main {
     flex-direction: column;
+  }
+
+  .detail__title-row {
+    flex-wrap: wrap;
   }
 
   .detail__grid {
