@@ -56,6 +56,13 @@ export function useUserSamples() {
     return true
   }
 
+  function deleteUserSample(id: string): boolean {
+    const index = userSamples.value.findIndex((s) => s.id === id)
+    if (index === -1) return false
+    userSamples.value.splice(index, 1)
+    return true
+  }
+
   function generateId(): string {
     return `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
@@ -66,6 +73,7 @@ export function useUserSamples() {
     addUserSample,
     getUserSampleById,
     updateUserSample,
+    deleteUserSample,
     generateId,
   }
 }

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { computed, ref, onMounted } from 'vue'
+import { useRouter, useRoute, RouterLink } from 'vue-router'
 import SampleMap from '@/components/SampleMap.vue'
 import TagFilter from '@/components/TagFilter.vue'
 import { useFavorites } from '@/composables/useFavorites'
@@ -10,10 +10,27 @@ import { CATEGORY_LABELS } from '@/types/sample'
 import type { SamplePoint } from '@/types/sample'
 
 const router = useRouter()
+const route = useRoute()
 const { favorites } = useFavorites()
 const { isUserSample } = useUserSamples()
 const allTags = getAllTags()
 const selectedTags = ref<string[]>([])
+
+const deleteSuccessVisible = ref(false)
+
+onMounted(() => {
+  if (route.query.deleted === '1') {
+    deleteSuccessVisible.value = true
+    router.replace({ query: {} })
+    setTimeout(() => {
+      deleteSuccessVisible.value = false
+    }, 3000)
+  }
+})
+
+function closeDeleteSuccess() {
+  deleteSuccessVisible.value = false
+}
 
 const filteredPoints = computed(() => {
   const points = samplePoints.value
@@ -55,6 +72,14 @@ function goStats() {
 
 <template>
   <div class="home">
+    <div v-if="deleteSuccessVisible" class="toast toast--success">
+      <span class="toast__icon">✓</span>
+      <span class="toast__message">采样点已删除成功</span>
+      <button type="button" class="toast__close" @click="closeDeleteSuccess" aria-label="关闭">
+        ×
+      </button>
+    </div>
+
     <aside class="home__sidebar card">
       <div class="home__submit-bar">
         <button type="button" class="btn btn--primary home__submit-btn" @click="goSubmit">
@@ -319,6 +344,64 @@ function goStats() {
 
   .home__map {
     min-height: 420px;
+  }
+}
+
+.toast {
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  z-index: 2000;
+  animation: toastSlideDown 0.3s ease;
+}
+
+.toast--success {
+  background: rgba(61, 214, 198, 0.15);
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.toast__icon {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.toast__message {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.toast__close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.toast__close:hover {
+  opacity: 1;
+}
+
+@keyframes toastSlideDown {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
   }
 }
 </style>

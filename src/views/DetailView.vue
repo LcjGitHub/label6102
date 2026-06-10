@@ -14,11 +14,13 @@ const props = defineProps<{
 }>()
 
 const router = useRouter()
-const { isUserSample } = useUserSamples()
+const { isUserSample, deleteUserSample } = useUserSamples()
 
 const sample = computed(() => getSampleById(props.id))
 
 const shareModalVisible = ref(false)
+const deleteConfirmVisible = ref(false)
+const deleting = ref(false)
 
 function openShareModal() {
   shareModalVisible.value = true
@@ -26,6 +28,29 @@ function openShareModal() {
 
 function closeShareModal() {
   shareModalVisible.value = false
+}
+
+function openDeleteConfirm() {
+  deleteConfirmVisible.value = true
+}
+
+function closeDeleteConfirm() {
+  deleteConfirmVisible.value = false
+}
+
+async function handleDelete() {
+  if (!sample.value || !isUserSample(sample.value.id)) return
+
+  deleting.value = true
+
+  try {
+    const success = deleteUserSample(sample.value.id)
+    if (success) {
+      router.push({ path: '/', query: { deleted: '1' } })
+    }
+  } finally {
+    deleting.value = false
+  }
 }
 </script>
 
@@ -50,6 +75,14 @@ function closeShareModal() {
                 @click="router.push({ name: 'edit', params: { id: sample.id } })"
               >
                 编辑
+              </button>
+              <button
+                v-if="isUserSample(sample.id)"
+                type="button"
+                class="btn detail__delete-btn"
+                @click="openDeleteConfirm"
+              >
+                删除
               </button>
               <FavoriteButton :sample-id="sample.id" />
               <button
@@ -135,6 +168,26 @@ function closeShareModal() {
     :sample="sample"
     @close="closeShareModal"
   />
+
+  <div v-if="deleteConfirmVisible" class="modal-overlay" @click.self="closeDeleteConfirm">
+    <div class="modal-card card">
+      <h3 class="modal-title">确认删除</h3>
+      <p class="modal-message">确定要删除这个采样点吗？此操作不可撤销。</p>
+      <div class="modal-actions">
+        <button type="button" class="btn" @click="closeDeleteConfirm" :disabled="deleting">
+          取消
+        </button>
+        <button
+          type="button"
+          class="btn btn--danger"
+          @click="handleDelete"
+          :disabled="deleting"
+        >
+          {{ deleting ? '删除中...' : '确认删除' }}
+        </button>
+      </div>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -197,6 +250,18 @@ function closeShareModal() {
 .detail__edit-btn {
   padding: 6px 14px;
   font-size: 0.85rem;
+}
+
+.detail__delete-btn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+.detail__delete-btn:hover {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: #ff6b6b;
 }
 
 .share-btn {
@@ -341,6 +406,87 @@ function closeShareModal() {
 
   .detail__grid {
     grid-template-columns: 1fr;
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: modalFadeIn 0.2s ease;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 400px;
+  padding: 24px;
+  animation: modalSlideUp 0.25s ease;
+}
+
+.modal-title {
+  margin: 0 0 12px;
+  font-size: 1.15rem;
+}
+
+.modal-message {
+  margin: 0 0 20px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.modal-actions .btn {
+  min-width: 100px;
+}
+
+.btn--danger {
+  background: #ff6b6b;
+  border-color: #ff6b6b;
+  color: #fff;
+  font-weight: 600;
+}
+
+.btn--danger:hover {
+  background: #ff5252;
+  border-color: #ff5252;
+}
+
+.btn--danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 </style>
