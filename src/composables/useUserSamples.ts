@@ -49,6 +49,13 @@ export function useUserSamples() {
     return userSamples.value.find((s) => s.id === id)
   }
 
+  function updateUserSample(id: string, updates: Partial<SamplePoint>): boolean {
+    const index = userSamples.value.findIndex((s) => s.id === id)
+    if (index === -1) return false
+    userSamples.value[index] = { ...userSamples.value[index], ...updates }
+    return true
+  }
+
   function generateId(): string {
     return `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
   }
@@ -58,6 +65,7 @@ export function useUserSamples() {
     isUserSample,
     addUserSample,
     getUserSampleById,
+    updateUserSample,
     generateId,
   }
 }

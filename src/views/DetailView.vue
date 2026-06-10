@@ -43,6 +43,14 @@ function closeShareModal() {
             <h1 class="detail__title">{{ sample.name }}</h1>
             <span v-if="isUserSample(sample.id)" class="detail__new-badge">新</span>
             <div class="detail__actions">
+              <button
+                v-if="isUserSample(sample.id)"
+                type="button"
+                class="btn btn--primary detail__edit-btn"
+                @click="router.push({ name: 'edit', params: { id: sample.id } })"
+              >
+                编辑
+              </button>
               <FavoriteButton :sample-id="sample.id" />
               <button
                 type="button"
@@ -184,6 +192,11 @@ function closeShareModal() {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.detail__edit-btn {
+  padding: 6px 14px;
+  font-size: 0.85rem;
 }
 
 .share-btn {

@@ -4,6 +4,7 @@ import DetailView from '@/views/DetailView.vue'
 import FavoritesView from '@/views/FavoritesView.vue'
 import SubmitView from '@/views/SubmitView.vue'
 import StatsView from '@/views/StatsView.vue'
+import EditView from '@/views/EditView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,12 @@ const router = createRouter({
       path: '/sample/:id',
       name: 'detail',
       component: DetailView,
+      props: true,
+    },
+    {
+      path: '/sample/:id/edit',
+      name: 'edit',
+      component: EditView,
       props: true,
     },
     {
