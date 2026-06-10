@@ -16,14 +16,6 @@ function onClear() {
   inputRef.value?.focus()
 }
 
-function onSearchClick() {
-  const trimmed = searchQuery.value.trim()
-  if (trimmed) {
-    addToSearchHistory(trimmed)
-  }
-  openSearch()
-}
-
 function onSubmit(e: Event) {
   e.preventDefault()
   const trimmed = searchQuery.value.trim()
@@ -64,7 +56,6 @@ function onSubmit(e: Event) {
       <button
         type="submit"
         class="search-box__btn"
-        @click="onSearchClick"
         :class="{ 'search-box__btn--open': isSearchOpen }"
         aria-label="搜索"
       >

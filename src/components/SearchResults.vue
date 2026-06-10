@@ -26,6 +26,7 @@ const query = computed(() => searchQuery.value.trim())
 
 function onHistoryClick(historyItem: string) {
   setQuery(historyItem)
+  addToSearchHistory(historyItem)
   inputRef.value?.focus()
 }
 
@@ -54,6 +55,7 @@ function goDetail(id: string) {
 
 function onClose() {
   closeSearch()
+  clearQuery()
 }
 
 function onClear() {
@@ -628,6 +630,12 @@ watch(isSearchOpen, (open) => {
 
 .search-history__item:hover .search-history__item-remove {
   opacity: 1;
+}
+
+@media (hover: none) {
+  .search-history__item-remove {
+    opacity: 0.6;
+  }
 }
 
 .search-history__item-remove:hover {

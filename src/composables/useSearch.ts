@@ -23,7 +23,16 @@ function loadSearchHistory() {
   try {
     const stored = localStorage.getItem(SEARCH_HISTORY_KEY)
     if (stored) {
-      searchHistory.value = JSON.parse(stored)
+      const parsed = JSON.parse(stored)
+      if (
+        Array.isArray(parsed) &&
+        parsed.every((item: unknown) => typeof item === 'string')
+      ) {
+        searchHistory.value = parsed
+      } else {
+        searchHistory.value = []
+        saveSearchHistory()
+      }
     }
   } catch (e) {
     console.error('Failed to load search history:', e)
