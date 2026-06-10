@@ -51,6 +51,13 @@ button {
   padding: 14px 24px;
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    padding: 12px 16px;
+  }
 }
 
 .brand {

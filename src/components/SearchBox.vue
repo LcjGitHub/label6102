@@ -1,17 +1,14 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref } from 'vue'
 import { useSearch } from '@/composables/useSearch'
 
-const { searchQuery, isSearchOpen, openSearch, closeSearch, setQuery, clearQuery } = useSearch()
+const { searchQuery, isSearchOpen, openSearch, setQuery, clearQuery } = useSearch()
 
 const inputRef = ref<HTMLInputElement | null>(null)
 
 function onInput(e: Event) {
   const target = e.target as HTMLInputElement
   setQuery(target.value)
-  if (target.value && !isSearchOpen.value) {
-    openSearch()
-  }
 }
 
 function onClear() {
@@ -19,37 +16,14 @@ function onClear() {
   inputRef.value?.focus()
 }
 
+function onSearchClick() {
+  openSearch()
+}
+
 function onSubmit(e: Event) {
   e.preventDefault()
-  if (searchQuery.value && !isSearchOpen.value) {
-    openSearch()
-  }
+  openSearch()
 }
-
-function handleKeydown(e: KeyboardEvent) {
-  if (e.key === 'Escape' && isSearchOpen.value) {
-    closeSearch()
-  }
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault()
-    openSearch()
-    inputRef.value?.focus()
-  }
-}
-
-watch(isSearchOpen, (open) => {
-  if (open) {
-    inputRef.value?.focus()
-  }
-})
-
-onMounted(() => {
-  window.addEventListener('keydown', handleKeydown)
-})
-
-onBeforeUnmount(() => {
-  window.removeEventListener('keydown', handleKeydown)
-})
 </script>
 
 <template>
@@ -64,13 +38,9 @@ onBeforeUnmount(() => {
         type="search"
         class="search-box__input"
         :value="searchQuery"
-        placeholder="搜索采样点名称、地址、标签..."
+        placeholder="搜索名称、地址、描述、标签..."
         @input="onInput"
-        @focus="openSearch"
       />
-      <span v-if="!searchQuery" class="search-box__shortcut">
-        <kbd>Ctrl</kbd><span>+</span><kbd>K</kbd>
-      </span>
       <button
         v-if="searchQuery"
         type="button"
@@ -83,6 +53,19 @@ onBeforeUnmount(() => {
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       </button>
+      <button
+        type="submit"
+        class="search-box__btn"
+        @click="onSearchClick"
+        :class="{ 'search-box__btn--open': isSearchOpen }"
+        aria-label="搜索"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <span>搜索</span>
+      </button>
     </div>
   </form>
 </template>
@@ -90,7 +73,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .search-box {
   flex: 1;
-  max-width: 440px;
+  max-width: 520px;
   margin: 0 auto;
 }
 
@@ -101,8 +84,8 @@ onBeforeUnmount(() => {
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 0 12px;
-  height: 38px;
+  padding: 0 6px 0 12px;
+  height: 40px;
   transition: border-color 0.15s, background 0.15s;
 }
 
@@ -134,30 +117,12 @@ onBeforeUnmount(() => {
   color: var(--color-text-muted);
 }
 
-.search-box__shortcut {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.search-box__shortcut kbd {
-  padding: 1px 6px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  font-size: 0.68rem;
-  font-family: inherit;
-}
-
 .search-box__clear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   padding: 0;
   border: none;
   background: transparent;
@@ -178,9 +143,39 @@ onBeforeUnmount(() => {
   height: 16px;
 }
 
-@media (max-width: 640px) {
-  .search-box__shortcut {
+.search-box__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 30px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--color-accent);
+  color: #0a1218;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s;
+  flex-shrink: 0;
+}
+
+.search-box__btn:hover {
+  filter: brightness(1.08);
+}
+
+.search-box__btn svg {
+  width: 15px;
+  height: 15px;
+}
+
+@media (max-width: 480px) {
+  .search-box__btn span {
     display: none;
+  }
+
+  .search-box__btn {
+    padding: 0 10px;
   }
 }
 </style>

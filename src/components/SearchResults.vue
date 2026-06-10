@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSearch } from '@/composables/useSearch'
 import { CATEGORY_LABELS } from '@/types/sample'
 
 const router = useRouter()
-const { searchQuery, isSearchOpen, results, closeSearch, clearQuery, highlightText } = useSearch()
+const { searchQuery, isSearchOpen, results, closeSearch, setQuery, clearQuery, highlightText } = useSearch()
 
+const inputRef = ref<HTMLInputElement | null>(null)
 const query = computed(() => searchQuery.value.trim())
 
 function goDetail(id: string) {
@@ -19,11 +20,27 @@ function onClose() {
   closeSearch()
 }
 
+function onClear() {
+  clearQuery()
+  inputRef.value?.focus()
+}
+
+function onInput(e: Event) {
+  const target = e.target as HTMLInputElement
+  setQuery(target.value)
+}
+
 function onOverlayClick(e: MouseEvent) {
   if (e.target === e.currentTarget) {
     onClose()
   }
 }
+
+watch(isSearchOpen, (open) => {
+  if (open) {
+    setTimeout(() => inputRef.value?.focus(), 50)
+  }
+})
 </script>
 
 <template>
@@ -32,10 +49,32 @@ function onOverlayClick(e: MouseEvent) {
       <div v-if="isSearchOpen" class="search-overlay" @click="onOverlayClick">
         <div class="search-results" role="dialog" aria-modal="true" aria-label="搜索结果">
           <header class="search-results__header">
-            <span class="search-results__title">搜索结果</span>
-            <span v-if="query" class="search-results__count">
-              找到 {{ results.length }} 个匹配「{{ query }}」的结果
-            </span>
+            <div class="search-results__search-bar">
+              <svg class="search-results__search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <input
+                ref="inputRef"
+                type="search"
+                class="search-results__search-input"
+                :value="searchQuery"
+                placeholder="搜索名称、地址、描述、标签..."
+                @input="onInput"
+              />
+              <button
+                v-if="searchQuery"
+                type="button"
+                class="search-results__search-clear"
+                @click="onClear"
+                aria-label="清除搜索"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
             <button type="button" class="search-results__close" @click="onClose" aria-label="关闭">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <line x1="18" y1="6" x2="6" y2="18" />
@@ -43,6 +82,9 @@ function onOverlayClick(e: MouseEvent) {
               </svg>
             </button>
           </header>
+          <div v-if="query" class="search-results__count-bar">
+            找到 {{ results.length }} 个匹配「{{ query }}」的结果
+          </div>
 
           <div v-if="!query" class="search-results__hint">
             <svg class="search-results__hint-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -129,8 +171,20 @@ function onOverlayClick(e: MouseEvent) {
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 80px 16px 16px;
+  padding: 96px 16px 16px;
   backdrop-filter: blur(4px);
+}
+
+@media (max-width: 720px) {
+  .search-overlay {
+    padding: 120px 12px 12px;
+  }
+}
+
+@media (max-width: 520px) {
+  .search-overlay {
+    padding: 140px 12px 12px;
+  }
 }
 
 .search-results {
@@ -149,29 +203,92 @@ function onOverlayClick(e: MouseEvent) {
 .search-results__header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
+  gap: 10px;
+  padding: 12px 14px;
   border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
-.search-results__title {
-  font-weight: 600;
-  font-size: 0.95rem;
+.search-results__search-bar {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 0 10px;
+  height: 38px;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-.search-results__count {
-  font-size: 0.82rem;
+.search-results__search-bar:focus-within {
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.search-results__search-icon {
+  width: 17px;
+  height: 17px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.search-results__search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  font-size: 0.92rem;
+  padding: 0 8px;
+  outline: none;
+  height: 100%;
+  min-width: 0;
+}
+
+.search-results__search-input::placeholder {
   color: var(--color-text-muted);
 }
 
-.search-results__close {
-  margin-left: auto;
+.search-results__search-clear {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.search-results__search-clear:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
+
+.search-results__search-clear svg {
+  width: 15px;
+  height: 15px;
+}
+
+.search-results__count-bar {
+  padding: 8px 18px;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.search-results__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   padding: 0;
   border: none;
   background: transparent;
@@ -179,6 +296,7 @@ function onOverlayClick(e: MouseEvent) {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
 }
 
 .search-results__close:hover {

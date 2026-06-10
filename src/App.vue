@@ -38,6 +38,13 @@ const { favorites } = useFavorites()
 <style scoped>
 .app-header {
   position: relative;
+  flex-wrap: wrap;
+}
+
+.brand-sub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
 }
 
 .app-nav {
@@ -81,5 +88,52 @@ const { favorites } = useFavorites()
   color: #0a1218;
   font-size: 0.72rem;
   font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .brand-sub {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .app-header {
+    row-gap: 10px;
+    padding: 12px 16px;
+  }
+
+  .brand-sub {
+    display: none;
+  }
+
+  .app-nav {
+    order: 3;
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header {
+    gap: 10px;
+  }
+
+  .brand {
+    order: 1;
+  }
+
+  :deep(.search-box) {
+    order: 3;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  .app-nav {
+    order: 2;
+    width: auto;
+    margin-left: auto;
+  }
 }
 </style>
